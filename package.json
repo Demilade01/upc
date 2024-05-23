@@ -6,6 +6,9 @@
     "start": "next start"
   },
   "dependencies": {
+    "@nextui-org/react": "^2.3.6",
+    "@nextui-org/theme": "^2.2.3",
+    "framer-motion": "^11.2.5",
     "mongodb": "^6.5.0",
     "next": "latest",
     "react": "^18.2.0",
@@ -14,6 +17,7 @@
     "swr": "^2.2.5"
   },
   "devDependencies": {
+    "@tailwindcss/forms": "^0.5.7",
     "@types/node": "18.7.5",
     "@types/react": "16.9.17",
     "autoprefixer": "^10.4.19",
