@@ -262,7 +262,7 @@ const LanguageAndCountrySelector = () => {
                           placement: "bottom",
                           classNames: {
                             base: [ 
-                              "bg-primary",
+                              "bg-primary rounded-lg",
                             ],
                             content: [
                               "py-2 shadow-xl",
