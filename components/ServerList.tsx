@@ -114,7 +114,7 @@ const LanguageAndCountrySelector = () => {
                           },
                           {
                             value: 90,
-                            label: "100",
+                            label: "90",
                           },
                         ]}
                         showSteps={true}
@@ -129,9 +129,9 @@ const LanguageAndCountrySelector = () => {
                           value: "font-medium text-default-500 text-small",
                           thumb: [
                             "transition-size",
-                            "bg-primary h-4 w-4 after:h-3 after:w-3 after:bg-primary ring-primary",
+                            "bg-primary h-5 w-5 after:h-4 after:w-4 after:bg-primary ring-primary",
                             "data-[dragging=true]:shadow-lg data-[dragging=true]:shadow-black/20",
-                            "data-[dragging=true]:w-4 data-[dragging=true]:h-4 data-[dragging=true]:after:h-3 data-[dragging=true]:after:w-3",
+                            "data-[dragging=true]:w-5 data-[dragging=true]:h-5 data-[dragging=true]:after:h-4 data-[dragging=true]:after:w-4",
                           ],
                           step: "data-[in-range=true]:bg-white dark:data-[in-range=true]:bg-white/50",
                         }}
@@ -139,9 +139,7 @@ const LanguageAndCountrySelector = () => {
                           offset: 10,
                           placement: "bottom",
                           classNames: {
-                            base: [ 
-                              "bg-primary",
-                            ],
+                            base: ["bg-primary rounded-lg"],
                             content: [
                               "py-2 shadow-xl",
                               "text-white bg-primary",
@@ -186,9 +184,9 @@ const LanguageAndCountrySelector = () => {
                           value: "font-medium text-default-500 text-small",
                           thumb: [
                             "transition-size",
-                            "bg-primary ring-primary after:bg-primary after:shadow-none w-4 h-4 after:h-3 after:w-3",
+                            "bg-primary h-5 w-5 after:h-4 after:w-4 after:bg-primary ring-primary",
                             "data-[dragging=true]:shadow-lg data-[dragging=true]:shadow-black/20",
-                            "data-[dragging=true]:!w-4 data-[dragging=true]:!h-4 data-[dragging=true]:after:!h-2 data-[dragging=true]:after:!w-2",
+                            "data-[dragging=true]:w-5 data-[dragging=true]:h-5 data-[dragging=true]:after:h-4 data-[dragging=true]:after:w-4",
                           ],
                           step: "data-[in-range=true]:bg-white dark:data-[in-range=true]:bg-white/30",
                         }}
@@ -234,7 +232,7 @@ const LanguageAndCountrySelector = () => {
                             value: 4500,
                             label: "4500",
                           },
-                           {
+                          {
                             value: 5000,
                             label: "5000",
                           },
@@ -250,20 +248,18 @@ const LanguageAndCountrySelector = () => {
                           label: "font-medium text-default-700 text-medium",
                           value: "font-medium text-default-500 text-small",
                           thumb: [
-                            "transition-size",
-                            "bg-primary h-4 w-4 after:h-3 after:w-3 after:bg-primary ring-primary",
+                             "transition-size",
+                            "bg-primary h-5 w-5 after:h-4 after:w-4 after:bg-primary ring-primary",
                             "data-[dragging=true]:shadow-lg data-[dragging=true]:shadow-black/20",
-                            "data-[dragging=true]:w-4 data-[dragging=true]:h-4 data-[dragging=true]:after:h-3 data-[dragging=true]:after:w-3",
-                          ],
+                            "data-[dragging=true]:w-5 data-[dragging=true]:h-5 data-[dragging=true]:after:h-4 data-[dragging=true]:after:w-4",
+                          ], 
                           step: "data-[in-range=true]:bg-white dark:data-[in-range=true]:bg-white/50",
                         }}
                         tooltipProps={{
                           offset: 10,
                           placement: "bottom",
                           classNames: {
-                            base: [ 
-                              "bg-primary rounded-lg",
-                            ],
+                            base: ["bg-primary rounded-lg"],
                             content: [
                               "py-2 shadow-xl",
                               "text-white bg-primary",
@@ -463,7 +459,7 @@ const LanguageAndCountrySelector = () => {
                       hasImage
                       placeholderIconOff
                       type="sort"
-                      valueClass="!text-sm" 
+                      valueClass="!text-sm"
                     />
                   </div>
                 </div>
