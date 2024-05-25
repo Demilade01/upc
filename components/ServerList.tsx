@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import React, { useState, useEffect } from 'react';
 import Link from "next/link";
 import LangDropdown from "./Select";
 import { Slider } from "@nextui-org/react";
@@ -9,12 +9,41 @@ const SortContent = [
   { id: 2, img: sortIcon, name: "Rank" },
   { id: 3, img: sortIcon, name: "AVG Players" },
 ];
-const LanguageAndCountrySelector = () => {
+const ServerList = () => {
   const [toggleMenu, setToggleMenu] = useState(false);
   const handleFilterToggle = () => {
     setToggleMenu(!toggleMenu);
     console.log("clicked");
   };
+  const [servers, setServers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('/api/wipes');
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        setServers(data.data);
+      } catch (error) {
+        console.error('Failed to fetch servers:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchData();
+  }, []);
+
+  // if (loading) {
+  //   return (<div>Loading...</div>);
+  // }
+
+  // if (!servers.length) {
+  //   return (<div>No servers found.</div>);
+  // }
 
   return (
     <main>
@@ -114,7 +143,7 @@ const LanguageAndCountrySelector = () => {
                           },
                           {
                             value: 90,
-                            label: "90",
+                            label: "100",
                           },
                         ]}
                         showSteps={true}
@@ -129,9 +158,9 @@ const LanguageAndCountrySelector = () => {
                           value: "font-medium text-default-500 text-small",
                           thumb: [
                             "transition-size",
-                            "bg-primary h-5 w-5 after:h-4 after:w-4 after:bg-primary ring-primary",
+                            "bg-primary h-4 w-4 after:h-3 after:w-3 after:bg-primary ring-primary",
                             "data-[dragging=true]:shadow-lg data-[dragging=true]:shadow-black/20",
-                            "data-[dragging=true]:w-5 data-[dragging=true]:h-5 data-[dragging=true]:after:h-4 data-[dragging=true]:after:w-4",
+                            "data-[dragging=true]:w-4 data-[dragging=true]:h-4 data-[dragging=true]:after:h-3 data-[dragging=true]:after:w-3",
                           ],
                           step: "data-[in-range=true]:bg-white dark:data-[in-range=true]:bg-white/50",
                         }}
@@ -139,7 +168,9 @@ const LanguageAndCountrySelector = () => {
                           offset: 10,
                           placement: "bottom",
                           classNames: {
-                            base: ["bg-primary rounded-lg"],
+                            base: [ 
+                              "bg-primary",
+                            ],
                             content: [
                               "py-2 shadow-xl",
                               "text-white bg-primary",
@@ -184,9 +215,9 @@ const LanguageAndCountrySelector = () => {
                           value: "font-medium text-default-500 text-small",
                           thumb: [
                             "transition-size",
-                            "bg-primary h-5 w-5 after:h-4 after:w-4 after:bg-primary ring-primary",
+                            "bg-primary ring-primary after:bg-primary after:shadow-none w-4 h-4 after:h-3 after:w-3",
                             "data-[dragging=true]:shadow-lg data-[dragging=true]:shadow-black/20",
-                            "data-[dragging=true]:w-5 data-[dragging=true]:h-5 data-[dragging=true]:after:h-4 data-[dragging=true]:after:w-4",
+                            "data-[dragging=true]:!w-4 data-[dragging=true]:!h-4 data-[dragging=true]:after:!h-2 data-[dragging=true]:after:!w-2",
                           ],
                           step: "data-[in-range=true]:bg-white dark:data-[in-range=true]:bg-white/30",
                         }}
@@ -232,7 +263,7 @@ const LanguageAndCountrySelector = () => {
                             value: 4500,
                             label: "4500",
                           },
-                          {
+                           {
                             value: 5000,
                             label: "5000",
                           },
@@ -248,18 +279,20 @@ const LanguageAndCountrySelector = () => {
                           label: "font-medium text-default-700 text-medium",
                           value: "font-medium text-default-500 text-small",
                           thumb: [
-                             "transition-size",
-                            "bg-primary h-5 w-5 after:h-4 after:w-4 after:bg-primary ring-primary",
+                            "transition-size",
+                            "bg-primary h-4 w-4 after:h-3 after:w-3 after:bg-primary ring-primary",
                             "data-[dragging=true]:shadow-lg data-[dragging=true]:shadow-black/20",
-                            "data-[dragging=true]:w-5 data-[dragging=true]:h-5 data-[dragging=true]:after:h-4 data-[dragging=true]:after:w-4",
-                          ], 
+                            "data-[dragging=true]:w-4 data-[dragging=true]:h-4 data-[dragging=true]:after:h-3 data-[dragging=true]:after:w-3",
+                          ],
                           step: "data-[in-range=true]:bg-white dark:data-[in-range=true]:bg-white/50",
                         }}
                         tooltipProps={{
                           offset: 10,
                           placement: "bottom",
                           classNames: {
-                            base: ["bg-primary rounded-lg"],
+                            base: [ 
+                              "bg-primary rounded-lg",
+                            ],
                             content: [
                               "py-2 shadow-xl",
                               "text-white bg-primary",
@@ -459,12 +492,33 @@ const LanguageAndCountrySelector = () => {
                       hasImage
                       placeholderIconOff
                       type="sort"
-                      valueClass="!text-sm"
+                      valueClass="!text-sm" 
                     />
                   </div>
                 </div>
               </div>
               <div className="space-y-5 mt-8">
+              {servers.map((server, index) => {
+                // Parse the date-time string to a Date object
+                const wipeDate = new Date(server.next_wipe);
+
+                // Format the date
+                const formattedDate = new Intl.DateTimeFormat('default', {
+                  day: '2-digit', 
+                  month: '2-digit'
+                }).format(wipeDate);
+
+                // Format the time
+                const formattedTime = new Intl.DateTimeFormat('default', {
+                  hour: '2-digit', 
+                  minute: '2-digit',
+                  hour12: false // Use 24-hour format
+                }).format(wipeDate);
+
+                // Combine formatted date and time
+                const formattedWipeDate = `${formattedDate} ${formattedTime}`;
+
+                return (
                 <div className="server-wrapper bg-black-700/80 flex md:gap-12 gap-4 items-center md:flex-row flex-col rounded-lg relative md:px-6 md:pe-12 hover:shadow-[5px_5px_20px_0px_#CE402A] transition duration-350 ease-in-out ">
                   <div className="flex max-sm:items-start max-md:p-6 max-md:pb-0 max-md:gap-2">
                     <div className="grid md:grid-cols-[100px_100px] place-content-center">
@@ -483,23 +537,22 @@ const LanguageAndCountrySelector = () => {
                     </div>
                     <div className="text-center">
                       <p className="text-lg max-md:text-sm text-white font-extrabold  text-center break-all">
-                        RustReborn.gg EU - Bedwars | AimTrain | Creative | Arena
-                        | FFA
+                        {server.name}
                       </p>
                       <p className="text-sm text-white text-center max-md:hidden">
-                        Rank: <span className="text-primary">1</span> | Type:
-                        <span className="text-primary">Modded</span> | AVG
+                        Rank: <span className="text-primary">{server.rank}</span> | Type:
+                        <span className="text-primary"> Modded</span> | AVG
                         Players:
-                        <span className="text-primary">450</span>
+                        <span className="text-primary"> {server.max_population_last_wipe}</span>
                       </p>
                     </div>
                   </div>
                   <div className="max-md:w-full flex-shrink-0">
                     <p className="text-sm text-white text-center md:hidden mb-2">
-                      Rank: <span className="text-primary">1</span> | Type:
-                      <span className="text-primary">Modded</span> | AVG
+                      Rank: <span className="text-primary">{server.rank}</span> | Type:
+                      <span className="text-primary"> Modded</span> | AVG
                       Players:
-                      <span className="text-primary">450</span>
+                      <span className="text-primary"> {server.max_population_last_wipe}</span>
                     </p>
                     <div className="bg-primary hover:bg-primary px-2 py-4 max-md:py-1.5 text-white text-center font-medium text-xl  md:min-h-[142px] font-Rammetto flex items-center justify-between flex-col max-md:gap-1.5 max-md:mb-4">
                       <div className="flex flex-col max-md:flex-row">
@@ -507,7 +560,7 @@ const LanguageAndCountrySelector = () => {
                         <span className="text-black"> 5h</span>
                       </div>
 
-                      <div className="text-[11px] ">20/05 17:40</div>
+                      <div className="text-[11px] ">{formattedWipeDate}</div>
                     </div>
                     <button className="bg-transparent h-full w-full md:hidden mb-4 text-white text-lg font-bold inline-block text-center">
                       Connect
@@ -519,252 +572,8 @@ const LanguageAndCountrySelector = () => {
                     alt=""
                   />
                 </div>
-
-                <div className="server-wrapper bg-black-700/80 flex md:gap-12 gap-4 items-center md:flex-row flex-col rounded-lg relative md:px-6 md:pe-12 hover:shadow-[5px_5px_20px_0px_#CE402A] transition duration-350 ease-in-out ">
-                  <div className="flex max-sm:items-start max-md:p-6 max-md:pb-0 max-md:gap-2">
-                    <div className="grid md:grid-cols-[100px_100px] place-content-center">
-                      <svg
-                        className="h-11 w-11 max-md:h-6 max-md:w-11 fill-none stroke-primary transition duration-300 ease-in-out hover:fill-primary"
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M12 .587l3.515 7.125 7.485.688-5.421 5.277 1.421 7.323-6.5-3.412-6.5 3.412 1.421-7.323-5.421-5.277 7.485-.688z" />
-                      </svg>
-                      <img
-                        className="md:block hidden self-center"
-                        src="./images/england.png"
-                        alt=""
-                      />
-                    </div>
-                    <div className="text-center">
-                      <p className="text-lg max-md:text-sm text-white font-extrabold  text-center break-all">
-                        RustReborn.gg EU - Bedwars | AimTrain | Creative | Arena
-                        | FFA
-                      </p>
-                      <p className="text-sm text-white text-center max-md:hidden">
-                        Rank: <span className="text-primary">1</span> | Type:
-                        <span className="text-primary">Modded</span> | AVG
-                        Players:
-                        <span className="text-primary">450</span>
-                      </p>
-                    </div>
-                  </div>
-                  <div className="max-md:w-full flex-shrink-0">
-                    <p className="text-sm text-white text-center md:hidden mb-2">
-                      Rank: <span className="text-primary">1</span> | Type:
-                      <span className="text-primary">Modded</span> | AVG
-                      Players:
-                      <span className="text-primary">450</span>
-                    </p>
-                    <div className="bg-primary hover:bg-primary px-2 py-4 max-md:py-1.5 text-white text-center font-medium text-xl  md:min-h-[142px] font-Rammetto flex items-center justify-between flex-col max-md:gap-1.5 max-md:mb-4">
-                      <div className="flex flex-col max-md:flex-row">
-                        <span>WIPE IN</span>
-                        <span className="text-black"> 5h</span>
-                      </div>
-
-                      <div className="text-[11px] ">20/05 17:40</div>
-                    </div>
-                    <button className="bg-transparent h-full w-full md:hidden mb-4 text-white text-lg font-bold inline-block text-center">
-                      Connect
-                    </button>
-                  </div>
-                </div>
-                <div className="server-wrapper bg-black-700/80 flex md:gap-12 gap-4 items-center md:flex-row flex-col rounded-lg relative md:px-6 md:pe-12 hover:shadow-[5px_5px_20px_0px_#CE402A] transition duration-350 ease-in-out ">
-                  <div className="flex max-sm:items-start max-md:p-6 max-md:pb-0 max-md:gap-2">
-                    <div className="grid md:grid-cols-[100px_100px] place-content-center">
-                      <svg
-                        className="h-11 w-11 max-md:h-6 max-md:w-11 fill-none stroke-primary transition duration-300 ease-in-out hover:fill-primary"
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M12 .587l3.515 7.125 7.485.688-5.421 5.277 1.421 7.323-6.5-3.412-6.5 3.412 1.421-7.323-5.421-5.277 7.485-.688z" />
-                      </svg>
-                      <img
-                        className="md:block hidden self-center"
-                        src="./images/england.png"
-                        alt=""
-                      />
-                    </div>
-                    <div className="text-center">
-                      <p className="text-lg max-md:text-sm text-white font-extrabold  text-center break-all">
-                        RustReborn.gg EU - Bedwars | AimTrain | Creative | Arena
-                        | FFA
-                      </p>
-                      <p className="text-sm text-white text-center max-md:hidden">
-                        Rank: <span className="text-primary">1</span> | Type:
-                        <span className="text-primary">Modded</span> | AVG
-                        Players:
-                        <span className="text-primary">450</span>
-                      </p>
-                    </div>
-                  </div>
-                  <div className="max-md:w-full flex-shrink-0">
-                    <p className="text-sm text-white text-center md:hidden mb-2">
-                      Rank: <span className="text-primary">1</span> | Type:
-                      <span className="text-primary">Modded</span> | AVG
-                      Players:
-                      <span className="text-primary">450</span>
-                    </p>
-                    <div className="bg-primary hover:bg-primary px-2 py-4 max-md:py-1.5 text-white text-center font-medium text-xl  md:min-h-[142px] font-Rammetto flex items-center justify-between flex-col max-md:gap-1.5 max-md:mb-4">
-                      <div className="flex flex-col max-md:flex-row">
-                        <span>WIPE IN</span>
-                        <span className="text-black"> 5h</span>
-                      </div>
-
-                      <div className="text-[11px] ">20/05 17:40</div>
-                    </div>
-                    <button className="bg-transparent h-full w-full md:hidden mb-4 text-white text-lg font-bold inline-block text-center">
-                      Connect
-                    </button>
-                  </div>
-                </div>
-                <div className="server-wrapper bg-black-700/80 flex md:gap-12 gap-4 items-center md:flex-row flex-col rounded-lg relative md:px-6 md:pe-12 hover:shadow-[5px_5px_20px_0px_#CE402A] transition duration-350 ease-in-out ">
-                  <div className="flex max-sm:items-start max-md:p-6 max-md:pb-0 max-md:gap-2">
-                    <div className="grid md:grid-cols-[100px_100px] place-content-center">
-                      <svg
-                        className="h-11 w-11 max-md:h-6 max-md:w-11 fill-none stroke-primary transition duration-300 ease-in-out hover:fill-primary"
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M12 .587l3.515 7.125 7.485.688-5.421 5.277 1.421 7.323-6.5-3.412-6.5 3.412 1.421-7.323-5.421-5.277 7.485-.688z" />
-                      </svg>
-                      <img
-                        className="md:block hidden self-center"
-                        src="./images/england.png"
-                        alt=""
-                      />
-                    </div>
-                    <div className="text-center">
-                      <p className="text-lg max-md:text-sm text-white font-extrabold  text-center break-all">
-                        RustReborn.gg EU - Bedwars | AimTrain | Creative | Arena
-                        | FFA
-                      </p>
-                      <p className="text-sm text-white text-center max-md:hidden">
-                        Rank: <span className="text-primary">1</span> | Type:
-                        <span className="text-primary">Modded</span> | AVG
-                        Players:
-                        <span className="text-primary">450</span>
-                      </p>
-                    </div>
-                  </div>
-                  <div className="max-md:w-full flex-shrink-0">
-                    <p className="text-sm text-white text-center md:hidden mb-2">
-                      Rank: <span className="text-primary">1</span> | Type:
-                      <span className="text-primary">Modded</span> | AVG
-                      Players:
-                      <span className="text-primary">450</span>
-                    </p>
-                    <div className="bg-primary hover:bg-primary px-2 py-4 max-md:py-1.5 text-white text-center font-medium text-xl  md:min-h-[142px] font-Rammetto flex items-center justify-between flex-col max-md:gap-1.5 max-md:mb-4">
-                      <div className="flex flex-col max-md:flex-row">
-                        <span>WIPE IN</span>
-                        <span className="text-black"> 5h</span>
-                      </div>
-
-                      <div className="text-[11px] ">20/05 17:40</div>
-                    </div>
-                    <button className="bg-transparent h-full w-full md:hidden mb-4 text-white text-lg font-bold inline-block text-center">
-                      Connect
-                    </button>
-                  </div>
-                </div>
-                <div className="server-wrapper bg-black-700/80 flex md:gap-12 gap-4 items-center md:flex-row flex-col rounded-lg relative md:px-6 md:pe-12 hover:shadow-[5px_5px_20px_0px_#CE402A] transition duration-350 ease-in-out ">
-                  <div className="flex max-sm:items-start max-md:p-6 max-md:pb-0 max-md:gap-2">
-                    <div className="grid md:grid-cols-[100px_100px] place-content-center">
-                      <svg
-                        className="h-11 w-11 max-md:h-6 max-md:w-11 fill-none stroke-primary transition duration-300 ease-in-out hover:fill-primary"
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M12 .587l3.515 7.125 7.485.688-5.421 5.277 1.421 7.323-6.5-3.412-6.5 3.412 1.421-7.323-5.421-5.277 7.485-.688z" />
-                      </svg>
-                      <img
-                        className="md:block hidden self-center"
-                        src="./images/england.png"
-                        alt=""
-                      />
-                    </div>
-                    <div className="text-center">
-                      <p className="text-lg max-md:text-sm text-white font-extrabold  text-center break-all">
-                        RustReborn.gg EU - Bedwars | AimTrain | Creative | Arena
-                        | FFA
-                      </p>
-                      <p className="text-sm text-white text-center max-md:hidden">
-                        Rank: <span className="text-primary">1</span> | Type:
-                        <span className="text-primary">Modded</span> | AVG
-                        Players:
-                        <span className="text-primary">450</span>
-                      </p>
-                    </div>
-                  </div>
-                  <div className="max-md:w-full flex-shrink-0">
-                    <p className="text-sm text-white text-center md:hidden mb-2">
-                      Rank: <span className="text-primary">1</span> | Type:
-                      <span className="text-primary">Modded</span> | AVG
-                      Players:
-                      <span className="text-primary">450</span>
-                    </p>
-                    <div className="bg-primary hover:bg-primary px-2 py-4 max-md:py-1.5 text-white text-center font-medium text-xl  md:min-h-[142px] font-Rammetto flex items-center justify-between flex-col max-md:gap-1.5 max-md:mb-4">
-                      <div className="flex flex-col max-md:flex-row">
-                        <span>WIPE IN</span>
-                        <span className="text-black"> 5h</span>
-                      </div>
-
-                      <div className="text-[11px] ">20/05 17:40</div>
-                    </div>
-                    <button className="bg-transparent h-full w-full md:hidden mb-4 text-white text-lg font-bold inline-block text-center">
-                      Connect
-                    </button>
-                  </div>
-                </div>
-                <div className="server-wrapper bg-black-700/80 flex md:gap-12 gap-4 items-center md:flex-row flex-col rounded-lg relative md:px-6 md:pe-12 hover:shadow-[5px_5px_20px_0px_#CE402A] transition duration-350 ease-in-out ">
-                  <div className="flex max-sm:items-start max-md:p-6 max-md:pb-0 max-md:gap-2">
-                    <div className="grid md:grid-cols-[100px_100px] place-content-center">
-                      <svg
-                        className="h-11 w-11 max-md:h-6 max-md:w-11 fill-none stroke-primary transition duration-300 ease-in-out hover:fill-primary"
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M12 .587l3.515 7.125 7.485.688-5.421 5.277 1.421 7.323-6.5-3.412-6.5 3.412 1.421-7.323-5.421-5.277 7.485-.688z" />
-                      </svg>
-                      <img
-                        className="md:block hidden self-center"
-                        src="./images/england.png"
-                        alt=""
-                      />
-                    </div>
-                    <div className="text-center">
-                      <p className="text-lg max-md:text-sm text-white font-extrabold  text-center break-all">
-                        RustReborn.gg EU - Bedwars | AimTrain | Creative | Arena
-                        | FFA
-                      </p>
-                      <p className="text-sm text-white text-center max-md:hidden">
-                        Rank: <span className="text-primary">1</span> | Type:
-                        <span className="text-primary">Modded</span> | AVG
-                        Players:
-                        <span className="text-primary">450</span>
-                      </p>
-                    </div>
-                  </div>
-                  <div className="max-md:w-full flex-shrink-0">
-                    <p className="text-sm text-white text-center md:hidden mb-2">
-                      Rank: <span className="text-primary">1</span> | Type:
-                      <span className="text-primary">Modded</span> | AVG
-                      Players:
-                      <span className="text-primary">450</span>
-                    </p>
-                    <div className="bg-primary hover:bg-primary px-2 py-4 max-md:py-1.5 text-white text-center font-medium text-xl  md:min-h-[142px] font-Rammetto flex items-center justify-between flex-col max-md:gap-1.5 max-md:mb-4">
-                      <div className="flex flex-col max-md:flex-row">
-                        <span>WIPE IN</span>
-                        <span className="text-black"> 5h</span>
-                      </div>
-
-                      <div className="text-[11px] ">20/05 17:40</div>
-                    </div>
-                    <button className="bg-transparent h-full w-full md:hidden mb-4 text-white text-lg font-bold inline-block text-center">
-                      Connect
-                    </button>
-                  </div>
-                </div>
+                );
+                })}
 
                 <div className="flex items-center justify-center gap-1 !mt-24 max-md:hidden">
                   <Link
@@ -842,4 +651,4 @@ const LanguageAndCountrySelector = () => {
   );
 };
 
-export default LanguageAndCountrySelector;
+export default ServerList;
