@@ -158,9 +158,9 @@ const ServerList = () => {
                           value: "font-medium text-default-500 text-small",
                           thumb: [
                             "transition-size",
-                            "bg-primary h-4 w-4 after:h-3 after:w-3 after:bg-primary ring-primary",
+                            "bg-primary h-5 w-5 after:h-4 after:w-4 after:bg-primary ring-primary",
                             "data-[dragging=true]:shadow-lg data-[dragging=true]:shadow-black/20",
-                            "data-[dragging=true]:w-4 data-[dragging=true]:h-4 data-[dragging=true]:after:h-3 data-[dragging=true]:after:w-3",
+                            "data-[dragging=true]:w-5 data-[dragging=true]:h-5 data-[dragging=true]:after:h-4 data-[dragging=true]:after:w-4",
                           ],
                           step: "data-[in-range=true]:bg-white dark:data-[in-range=true]:bg-white/50",
                         }}
@@ -169,7 +169,7 @@ const ServerList = () => {
                           placement: "bottom",
                           classNames: {
                             base: [ 
-                              "bg-primary",
+                              "bg-primary rounded-lg",
                             ],
                             content: [
                               "py-2 shadow-xl",
@@ -280,9 +280,9 @@ const ServerList = () => {
                           value: "font-medium text-default-500 text-small",
                           thumb: [
                             "transition-size",
-                            "bg-primary h-4 w-4 after:h-3 after:w-3 after:bg-primary ring-primary",
+                            "bg-primary h-5 w-5 after:h-4 after:w-4 after:bg-primary ring-primary",
                             "data-[dragging=true]:shadow-lg data-[dragging=true]:shadow-black/20",
-                            "data-[dragging=true]:w-4 data-[dragging=true]:h-4 data-[dragging=true]:after:h-3 data-[dragging=true]:after:w-3",
+                            "data-[dragging=true]:w-5 data-[dragging=true]:h-5 data-[dragging=true]:after:h-4 data-[dragging=true]:after:w-4",
                           ],
                           step: "data-[in-range=true]:bg-white dark:data-[in-range=true]:bg-white/50",
                         }}
@@ -519,59 +519,69 @@ const ServerList = () => {
                 const formattedWipeDate = `${formattedDate} ${formattedTime}`;
 
                 return (
-                <div className="server-wrapper bg-black-700/80 flex md:gap-12 gap-4 items-center md:flex-row flex-col rounded-lg relative md:px-6 md:pe-12 hover:shadow-[5px_5px_20px_0px_#CE402A] transition duration-350 ease-in-out ">
-                  <div className="flex max-sm:items-start max-md:p-6 max-md:pb-0 max-md:gap-2">
-                    <div className="grid md:grid-cols-[100px_100px] place-content-center">
-                      <svg
-                        className="h-11 w-11 max-md:h-6 max-md:w-11 fill-none stroke-primary transition duration-300 ease-in-out hover:fill-primary"
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M12 .587l3.515 7.125 7.485.688-5.421 5.277 1.421 7.323-6.5-3.412-6.5 3.412 1.421-7.323-5.421-5.277 7.485-.688z" />
-                      </svg>
-                      <img
-                        className="md:block hidden self-center"
-                        src="./images/england.png"
-                        alt=""
-                      />
+                  <div className="server-wrapper bg-black-700/80 flex md:gap-12 gap-4 md:flex-row flex-col rounded-lg relative md:px-6 md:pe-12 hover:shadow-[5px_5px_20px_0px_#CE402A] transition duration-350 ease-in-out ">
+                    <div className="flex max-sm:items-start max-md:p-6 max-md:pb-0 max-md:gap-2 md:pl-0 md:p-8">
+                      <div className="grid md:grid-cols-[100px_100px] place-content-center">
+                        <svg
+                          className="h-11 w-11 max-md:h-6 max-md:w-11 fill-none stroke-primary transition duration-300 ease-in-out hover:fill-primary"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M12 .587l3.515 7.125 7.485.688-5.421 5.277 1.421 7.323-6.5-3.412-6.5 3.412 1.421-7.323-5.421-5.277 7.485-.688z" />
+                        </svg>
+                        <img
+                          className="md:block hidden self-center"
+                          src="./images/england.png"
+                          alt=""
+                        />
+                      </div>
+                      <div className="text-center">
+                        <p className="text-lg max-md:text-sm text-white font-extrabold  text-center break-all">
+                          {server.name}
+                        </p>
+                        <p className="text-sm text-white text-center max-md:hidden">
+                          Rank:{" "}
+                          <span className="text-primary">{server.rank}</span> |
+                          Type:
+                          <span className="text-primary"> Modded</span> | AVG
+                          Players:
+                          <span className="text-primary">
+                            {" "}
+                            {server.max_population_last_wipe}
+                          </span>
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-center">
-                      <p className="text-lg max-md:text-sm text-white font-extrabold  text-center break-all">
-                        {server.name}
-                      </p>
-                      <p className="text-sm text-white text-center max-md:hidden">
-                        Rank: <span className="text-primary">{server.rank}</span> | Type:
+                    <div className="max-md:w-full flex-shrink-0">
+                      <p className="text-sm text-white text-center md:hidden mb-2">
+                        Rank:{" "}
+                        <span className="text-primary">{server.rank}</span> |
+                        Type:
                         <span className="text-primary"> Modded</span> | AVG
                         Players:
-                        <span className="text-primary"> {server.max_population_last_wipe}</span>
+                        <span className="text-primary">
+                          {" "}
+                          {server.max_population_last_wipe}
+                        </span>
                       </p>
-                    </div>
-                  </div>
-                  <div className="max-md:w-full flex-shrink-0">
-                    <p className="text-sm text-white text-center md:hidden mb-2">
-                      Rank: <span className="text-primary">{server.rank}</span> | Type:
-                      <span className="text-primary"> Modded</span> | AVG
-                      Players:
-                      <span className="text-primary"> {server.max_population_last_wipe}</span>
-                    </p>
-                    <div className="bg-primary hover:bg-primary px-2 py-4 max-md:py-1.5 text-white text-center font-medium text-xl  md:min-h-[142px] font-Rammetto flex items-center justify-between flex-col max-md:gap-1.5 max-md:mb-4">
-                      <div className="flex flex-col max-md:flex-row">
-                        <span>WIPE IN</span>
-                        <span className="text-black"> 5h</span>
-                      </div>
+                      <div className="bg-primary hover:bg-primary px-2 py-4 max-md:py-1.5 text-white text-center font-medium text-xl  md:min-h-[142px] h-full font-Rammetto flex items-center justify-between flex-col max-md:gap-1.5 max-md:mb-4">
+                        <div className="flex flex-col max-md:flex-row">
+                          <span>WIPE IN</span>
+                          <span className="text-black"> 5h</span>
+                        </div>
 
-                      <div className="text-[11px] ">{formattedWipeDate}</div>
+                        <div className="text-[11px] ">{formattedWipeDate}</div>
+                      </div>
+                      <button className="bg-transparent h-full w-full md:hidden mb-4 text-white text-lg font-bold inline-block text-center">
+                        Connect
+                      </button>
                     </div>
-                    <button className="bg-transparent h-full w-full md:hidden mb-4 text-white text-lg font-bold inline-block text-center">
-                      Connect
-                    </button>
+                    <img
+                      className="absolute right-2 top-2 hidden md:block"
+                      src="./images/verified.png"
+                      alt=""
+                    />
                   </div>
-                  <img
-                    className="absolute right-2 top-2 hidden md:block"
-                    src="./images/verified.png"
-                    alt=""
-                  />
-                </div>
                 );
                 })}
 
