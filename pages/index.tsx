@@ -13,7 +13,6 @@ export default function Home() {
         <title>Upcoming Wipes - Latest Rust Server Wipes</title>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
-        <link rel="stylesheet" href="./css/rSlider.css" />
         <link rel="icon" href="images/favicon.ico" />
 
         <link
