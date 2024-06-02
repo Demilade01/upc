@@ -2,8 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+html{
+  @apply !bg-black-900;
+
+}
 body {
-  @apply bg-mainBg bg-black-900 font-inter bg-no-repeat bg-cover;
+  @apply bg-mainBg bg-black-900 font-inter bg-no-repeat bg-cover min-h-screen;
 }
 @media (max-width: 1023px) {
   .filter-sidebar {
