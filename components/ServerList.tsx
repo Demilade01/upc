@@ -4,53 +4,170 @@ import Link from "next/link";
 import LangDropdown from "./Select";
 import { Slider } from "@nextui-org/react";
 import sortIcon from "../public/images/sort.png";
+
 const SortContent = [
   { id: 1, img: sortIcon, name: "Wipe Time" },
   { id: 2, img: sortIcon, name: "Rank" },
   { id: 3, img: sortIcon, name: "AVG Players" },
 ];
+
 const ServerList = () => {
   const [toggleMenu, setToggleMenu] = useState(false);
   const handleFilterToggle = () => {
     setToggleMenu(!toggleMenu);
-    console.log("clicked");
   };
+
+  const [groupLimits, setgroupLimits] = useState([]);
+  const [teamUILimits, setTeamUILimits] = useState([]);
+  const [regions, setRegions] = useState([]);
   const [servers, setServers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState({
+    maximumPopulation: [],
+    nextWipe: [],
+    mapSize: [],
+    regions: [],
+    groupLimit: [],
+    teamUILimit: []
+  });
+
+  const [maximumPopulationSlider, setMaximumPopulationSlider] = useState({
+    minValue: 0,
+    maxValue: 100,
+    defaultValue: [0, 100],
+    marks: [],
+    step: 1
+  });
+
+  const [mapSizeSlider, setMapSizeSlider] = useState({
+    minValue: 0,
+    maxValue: 0,
+    defaultValue: [0, 0],
+    marks: [
+      { value: 0, label: '0' },
+      { value: 0, label: '0' },
+      { value: 0, label: '0' },
+      { value: 0, label: '0' },
+      { value: 0, label: '0' }
+    ],
+    step: 500
+  });
+
+
+  const handleFilterChange = (filterName, value) => {
+    setFilters((prevFilters) => ({ ...prevFilters, [filterName]: value }));
+  };
+
+  const fetchServers = async () => {
+    setLoading(true);
+    try {
+      const query = new URLSearchParams(filters).toString();
+      const response = await fetch(`/api/wipes?${query}`);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      setServers(data.data);
+    } catch (error) {
+      console.error('Failed to fetch servers:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchMaximumPopulationSlider = async () => {
+    try {
+      const response = await fetch('/api/maximum_population_range');
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      const { minPopulation, maxPopulation, marks, step } = data.data;
+      setMaximumPopulationSlider({
+        minValue: minPopulation,
+        maxValue: maxPopulation,
+        defaultValue: [minPopulation, maxPopulation],
+        marks,
+        step
+      });
+    } catch (error) {
+      console.error('Failed to fetch slider config:', error);
+    }
+  };
+
+  const fetchMapSizeSlider = async () => {
+    try {
+      const response = await fetch('/api/map_size_range');
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      const { minSize, maxSize, marks, step } = data.data;
+      setMapSizeSlider({
+        minValue: minSize,
+        maxValue: maxSize,
+        defaultValue: [minSize, maxSize],
+        marks,
+        step
+      });
+    } catch (error) {
+      console.error('Failed to fetch slider config:', error);
+    }
+  };
+  
+  const fetchRegions = async () => {
+    try {
+      const response = await fetch('/api/regions');
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      setRegions(data.data);
+    } catch (error) {
+      console.error('Failed to fetch regions:', error);
+    }
+  };
+
+  const fetchGroupLimits = async () => {
+    try {
+      const response = await fetch('/api/group_limits');
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      setgroupLimits(data.data);
+    } catch (error) {
+      console.error('Failed to fetch team limits:', error);
+    }
+  };
+
+  const fetchTeamUILimits = async () => {
+    try {
+      const response = await fetch('/api/team_ui_limits');
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      setTeamUILimits(data.data);
+    } catch (error) {
+      console.error('Failed to fetch team UI limits:', error);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch('/api/wipes');
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        const data = await response.json();
-        setServers(data.data);
-      } catch (error) {
-        console.error('Failed to fetch servers:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-  
-    fetchData();
-  }, []);
-
-  // if (loading) {
-  //   return (<div>Loading...</div>);
-  // }
-
-  // if (!servers.length) {
-  //   return (<div>No servers found.</div>);
-  // }
+    fetchServers();
+    fetchMaximumPopulationSlider();
+    fetchMapSizeSlider();
+    fetchRegions();
+    fetchGroupLimits();
+    fetchTeamUILimits();
+  }, [filters]);
 
   return (
     <main>
       <div
-        className={`${
-          toggleMenu ? "fixed" : "hidden"
-        }  inset-0 bg-black/50 z-[2] h-full w-full`}
+        className={`${toggleMenu ? "fixed" : "hidden"
+          }  inset-0 bg-black/50 z-[2] h-full w-full`}
         id="overlay"
         onClick={() => {
           setToggleMenu(false);
@@ -60,9 +177,8 @@ const ServerList = () => {
         <div className="container">
           <div className="grid lg:grid-cols-[340px_auto] grid-flow-row-dense  gap-4">
             <div
-              className={`${
-                toggleMenu ? "active" : ""
-              } filter-sidebar  lg:h-max lg:mt-[67px] relative space-y-4 max-w-[340px] flex-shrink-0 bg-black-700/80 rounded-lg p-5 text-white md:block `}
+              className={`${toggleMenu ? "active" : ""
+                } filter-sidebar  lg:h-max lg:mt-[67px] relative space-y-4 max-w-[340px] flex-shrink-0 bg-black-700/80 rounded-lg p-5 text-white md:block `}
               id="collapsible-content"
             >
               <div className="">
@@ -84,72 +200,24 @@ const ServerList = () => {
                 </div>
               </div>
               <div className="h-[calc(100%_-_90px)] lg:h-auto overflow-y-auto lg:overflow-visible space-y-4">
-                <div className="flex flex-col gap-2">
-                  <div className="space-x-1">
-                    <span className="inline-block">
-                      <img src="./images/cancel.png" alt="" />
-                    </span>
-                    <span className="inline-block font-bold">Duo</span>
-                    <span className="inline-block text-primary italic">
-                      (Team Limit)
-                    </span>
-                  </div>
-                  <div className="space-x-1">
-                    <span className="inline-block">
-                      <img src="./images/cancel.png" alt="" />
-                    </span>
-                    <span className="font-bold">Europe </span>
-                    <span className="text-primary italic">(Region)</span>
-                  </div>
-                  <div className="space-x-1">
-                    <span className="inline-block">
-                      <img src="./images/cancel.png" alt="" />
-                    </span>
-                    <span className="font-bold">20-100 </span>
-                    <span className="text-primary italic">
-                      (Average Population)
-                    </span>
-                  </div>
-                  <div className="space-x-1">
-                    <span className="inline-block">
-                      <img src="./images/cancel.png" alt="" />
-                    </span>
-                    <span className="font-bold">3500-5000</span>
-                    <span className="text-primary italic">(Map Size)</span>
-                  </div>
-                  <button className="text-primary self-start  italic">
-                    (reset filters)
-                  </button>
-                </div>
                 <div className="space-y-4 ">
                   <div className="">
                     <label className="block text-xl border-b border-primary pb-2 mb-2">
-                      Average population
+                      Maximum population on wipe day
                     </label>
                     <div className="relative py-3 px-6">
                       <Slider
-                        step={30}
-                        maxValue={90}
-                        minValue={30}
-                        defaultValue={[20, 50]}
-                        marks={[
-                          {
-                            value: 30,
-                            label: "30",
-                          },
-                          {
-                            value: 60,
-                            label: "60",
-                          },
-                          {
-                            value: 90,
-                            label: "100",
-                          },
-                        ]}
+                        key={maximumPopulationSlider.defaultValue.join('-')} // Use key to force re-render
+                        step={maximumPopulationSlider.step}
+                        maxValue={maximumPopulationSlider.maxValue}
+                        minValue={maximumPopulationSlider.minValue}
+                        defaultValue={maximumPopulationSlider.defaultValue}
+                        marks={maximumPopulationSlider.marks}
                         showSteps={true}
                         showTooltip={true}
                         showOutline={true}
                         disableThumbScale={true}
+                        onChange={(value) => handleFilterChange("maximumPopulation", value)}
                         classNames={{
                           base: "max-w-md",
                           filler: "bg-primary",
@@ -168,7 +236,7 @@ const ServerList = () => {
                           offset: 10,
                           placement: "bottom",
                           classNames: {
-                            base: [ 
+                            base: [
                               "bg-primary rounded-lg",
                             ],
                             content: [
@@ -182,96 +250,21 @@ const ServerList = () => {
                   </div>
                   <div>
                     <label className="block text-xl border-b border-primary pb-2 mb-2">
-                      Next Wipe
-                    </label>
-                    <div className="relative py-3 px-6">
-                      <Slider
-                        step={20}
-                        maxValue={50}
-                        minValue={10}
-                        showSteps={true}
-                        showTooltip={true}
-                        showOutline={true}
-                        disableThumbScale={true}
-                        marks={[
-                          {
-                            value: 10,
-                            label: "10min",
-                          },
-                          {
-                            value: 30,
-                            label: "20min",
-                          },
-                          {
-                            value: 50,
-                            label: "30min",
-                          },
-                        ]}
-                        classNames={{
-                          base: "max-w-md",
-                          filler: "bg-primary h-3",
-                          labelWrapper: "mb-2",
-                          label: "font-medium text-default-700 text-medium",
-                          value: "font-medium text-default-500 text-small",
-                          thumb: [
-                            "transition-size",
-                            "bg-primary ring-primary after:bg-primary after:shadow-none w-4 h-4 after:h-3 after:w-3",
-                            "data-[dragging=true]:shadow-lg data-[dragging=true]:shadow-black/20",
-                            "data-[dragging=true]:!w-4 data-[dragging=true]:!h-4 data-[dragging=true]:after:!h-2 data-[dragging=true]:after:!w-2",
-                          ],
-                          step: "data-[in-range=true]:bg-white dark:data-[in-range=true]:bg-white/30",
-                        }}
-                        tooltipProps={{
-                          offset: 10,
-                          placement: "bottom",
-                          classNames: {
-                            base: [
-                              // arrow color
-                              "bg-primary rounded-lg",
-                            ],
-                            content: ["py-2 shadow-xl", "bg-primary"],
-                          },
-                        }}
-                      />
-                      <div className="slider-range absolute z-10 h-2 bg-primary rounded-lg"></div>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-xl border-b border-primary pb-2 mb-2">
                       Map Size
                     </label>
                     <div className="relative py-3 px-6">
                       <Slider
-                        step={500}
-                        maxValue={5000}
-                        minValue={3000}
-                        defaultValue={[3500, 4500]}
-                        marks={[
-                          {
-                            value: 3000,
-                            label: "3000",
-                          },
-                          {
-                            value: 3500,
-                            label: "3500",
-                          },
-                          {
-                            value: 4000,
-                            label: "4000",
-                          },
-                          {
-                            value: 4500,
-                            label: "4500",
-                          },
-                           {
-                            value: 5000,
-                            label: "5000",
-                          },
-                        ]}
+                        key={mapSizeSlider.defaultValue.join('-')} // Use key to force re-render
+                        step={mapSizeSlider.step}
+                        maxValue={mapSizeSlider.maxValue}
+                        minValue={mapSizeSlider.minValue}
+                        defaultValue={mapSizeSlider.defaultValue}
+                        marks={mapSizeSlider.marks}
                         showSteps={true}
                         showTooltip={true}
                         showOutline={true}
                         disableThumbScale={true}
+                        onChange={(value) => handleFilterChange("mapSize", value)}
                         classNames={{
                           base: "max-w-md",
                           filler: "bg-primary",
@@ -290,7 +283,7 @@ const ServerList = () => {
                           offset: 10,
                           placement: "bottom",
                           classNames: {
-                            base: [ 
+                            base: [
                               "bg-primary rounded-lg",
                             ],
                             content: [
@@ -309,114 +302,46 @@ const ServerList = () => {
                       Region
                     </label>
                     <div className="flex flex-col space-y-2 pl-1">
-                      <div className="group checkbox-container">
-                        <input
-                          type="checkbox"
-                          className="w-4 h-4 rounded group-hover:bg-primary bg-transparent border-2 border-primary focus:ring-0 focus:ring-offset-0 focus:outline-offset-0 ring-0 focus:shadow-none focus-visible:border-0 text-primary"
-                          id="North-America"
-                        />
-                        <label htmlFor="North-America" className="ml-2">
-                          North America
-                        </label>
-                      </div>
-                      <div className="group checkbox-container">
-                        <input
-                          type="checkbox"
-                          id="South-America"
-                          className="w-4 h-4 rounded group-hover:bg-primary bg-transparent border-2 border-primary focus:ring-0 focus:ring-offset-0 focus:outline-offset-0 ring-0 focus:shadow-none focus-visible:border-0 text-primary"
-                        />
-                        <label htmlFor="South-America" className="ml-2">
-                          South America
-                        </label>
-                      </div>
-                      <div className="group checkbox-container">
-                        <input
-                          type="checkbox"
-                          className="w-4 h-4 rounded group-hover:bg-primary bg-transparent border-2 border-primary focus:ring-0 focus:ring-offset-0 focus:outline-offset-0 ring-0 focus:shadow-none focus-visible:border-0 text-primary"
-                          id="Europe"
-                        />
-                        <label htmlFor="Europe" className="ml-2">
-                          Europe
-                        </label>
-                      </div>
-                      <div className="group checkbox-container">
-                        <input
-                          type="checkbox"
-                          id="West-Asia"
-                          className="w-4 h-4 rounded group-hover:bg-primary bg-transparent border-2 border-primary focus:ring-0 focus:ring-offset-0 focus:outline-offset-0 ring-0 focus:shadow-none focus-visible:border-0 text-primary"
-                        />
-                        <label htmlFor="West-Asia" className="ml-2">
-                          West Asia
-                        </label>
-                      </div>
-                      <div className="group checkbox-container">
-                        <input
-                          type="checkbox"
-                          id="East-Asia"
-                          className="w-4 h-4 rounded group-hover:bg-primary bg-transparent border-2 border-primary focus:ring-0 focus:ring-offset-0 focus:outline-offset-0 ring-0 focus:shadow-none focus-visible:border-0 text-primary"
-                        />
-                        <label htmlFor="East-Asia" className="ml-2">
-                          East Asia
-                        </label>
-                      </div>
-                      <div className="group checkbox-container">
-                        <input
-                          id="Oceania"
-                          type="checkbox"
-                          className="w-4 h-4 rounded group-hover:bg-primary bg-transparent border-2 border-primary focus:ring-0 focus:ring-offset-0 focus:outline-offset-0 ring-0 focus:shadow-none focus-visible:border-0 text-primary"
-                        />
-                        <label htmlFor="Oceania" className="ml-2">
-                          Oceania
-                        </label>
-                      </div>
+                    {regions.map((region) => (
+      <div className="group checkbox-container" key={region}>
+        <input
+          type="checkbox"
+          className="w-4 h-4 rounded group-hover:bg-primary bg-transparent border-2 border-primary focus:ring-0 focus:ring-offset-0 focus:outline-offset-0 ring-0 focus:shadow-none focus-visible:border-0 text-primary"
+          id={region}
+          onChange={(e) => handleFilterChange(
+            "regions",
+            e.target.checked ? [...filters.regions, region] : filters.regions.filter(r => r !== region)
+          )}
+        />
+        <label htmlFor={region} className="ml-2">
+          {region}
+        </label>
+      </div>
+    ))}
                     </div>
                   </div>
                   <div className="space-y-2">
                     <div className="Team-limit">
                       <label className="block text-xl border-b border-primary pb-2 mb-2">
-                        Team Limit
+                        Group Limit
                       </label>
                       <div className="flex flex-col space-y-1 pl-1">
-                        <div className="group checkbox-container">
-                          <input
-                            id="solo"
-                            type="checkbox"
-                            className="w-4 h-4 rounded group-hover:bg-primary bg-transparent border-2 border-primary focus:ring-0 focus:ring-offset-0 focus:outline-offset-0 ring-0 focus:shadow-none focus-visible:border-0 text-primary"
-                          />
-                          <label htmlFor="solo" className="ml-2">
-                            Solo
-                          </label>
-                        </div>
-                        <div className="group checkbox-container">
-                          <input
-                            id="Duo"
-                            type="checkbox"
-                            className="w-4 h-4 rounded group-hover:bg-primary bg-transparent border-2 border-primary focus:ring-0 focus:ring-offset-0 focus:outline-offset-0 ring-0 focus:shadow-none focus-visible:border-0 text-primary"
-                          />
-                          <label htmlFor="Duo" className="ml-2">
-                            Duo
-                          </label>
-                        </div>
-                        <div className="group checkbox-container">
-                          <input
-                            id="Trio"
-                            type="checkbox"
-                            className="w-4 h-4 rounded group-hover:bg-primary bg-transparent border-2 border-primary focus:ring-0 focus:ring-offset-0 focus:outline-offset-0 ring-0 focus:shadow-none focus-visible:border-0 text-primary"
-                          />
-                          <label htmlFor="Trio" className="ml-2">
-                            Trio
-                          </label>
-                        </div>
-                        <div className="group checkbox-container">
-                          <input
-                            id="Squad"
-                            type="checkbox"
-                            className="w-4 h-4 rounded group-hover:bg-primary bg-transparent border-2 border-primary focus:ring-0 focus:ring-offset-0 focus:outline-offset-0 ring-0 focus:shadow-none focus-visible:border-0 text-primary"
-                          />
-                          <label htmlFor="Squad" className="ml-2">
-                            Squad
-                          </label>
-                        </div>
+                      {groupLimits.map((limit) => (
+        <div className="group checkbox-container" key={limit}>
+          <input
+            id={limit}
+            type="checkbox"
+            className="w-4 h-4 rounded group-hover:bg-primary bg-transparent border-2 border-primary focus:ring-0 focus:ring-offset-0 focus:outline-offset-0 ring-0 focus:shadow-none focus-visible:border-0 text-primary"
+            onChange={(e) => handleFilterChange(
+              "groupLimit",
+              e.target.checked ? [...filters.groupLimit, limit] : filters.groupLimit.filter(l => l !== limit)
+            )}
+          />
+          <label htmlFor={limit} className="ml-2">
+            {limit}
+          </label>
+        </div>
+      ))}
                       </div>
                     </div>
                   </div>
@@ -426,42 +351,28 @@ const ServerList = () => {
                       Team UI
                     </label>
                     <div className="flex flex-col space-y-1 pl-1">
-                      <div className="group checkbox-container">
-                        <input
-                          id="4"
-                          type="checkbox"
-                          className="w-4 h-4 rounded group-hover:bg-primary bg-transparent border-2 border-primary focus:ring-0 focus:ring-offset-0 focus:outline-offset-0 ring-0 focus:shadow-none focus-visible:border-0 text-primary"
-                        />
-                        <label htmlFor="4" className="ml-2">
-                          4
-                        </label>
-                      </div>
-                      <div className="group checkbox-container">
-                        <input
-                          type="checkbox"
-                          id="8"
-                          className="w-4 h-4 rounded group-hover:bg-primary bg-transparent border-2 border-primary focus:ring-0 focus:ring-offset-0 focus:outline-offset-0 ring-0 focus:shadow-none focus-visible:border-0 text-primary"
-                        />
-                        <label htmlFor="8" className="ml-2">
-                          8
-                        </label>
-                      </div>
-                      <div className="group checkbox-container">
-                        <input
-                          id="16"
-                          type="checkbox"
-                          className="w-4 h-4 rounded group-hover:bg-primary bg-transparent border-2 border-primary focus:ring-0 focus:ring-offset-0 focus:outline-offset-0 ring-0 focus:shadow-none focus-visible:border-0 text-primary"
-                        />
-                        <label htmlFor="16" className="ml-2">
-                          16
-                        </label>
-                      </div>
+                    {teamUILimits.map((limit) => (
+      <div className="group checkbox-container" key={limit}>
+        <input
+          type="checkbox"
+          className="w-4 h-4 rounded group-hover:bg-primary bg-transparent border-2 border-primary focus:ring-0 focus:ring-offset-0 focus:outline-offset-0 ring-0 focus:shadow-none focus-visible:border-0 text-primary"
+          id={`teamUILimit-${limit}`}
+          onChange={(e) => handleFilterChange(
+            "teamUILimit",
+            e.target.checked ? [...filters.teamUILimit, limit] : filters.teamUILimit.filter(l => l !== limit)
+          )}
+        />
+        <label htmlFor={`teamUILimit-${limit}`} className="ml-2">
+          {limit}
+        </label>
+      </div>
+    ))}
                     </div>
                   </div>
                 </div>
               </div>
               <div className="">
-                <button className="w-full  bg-primary rounded-lg p-2 close lg:hidden">
+                <button className="w-full  bg-primary rounded-lg p-2 close lg:hidden" onClick={fetchServers}>
                   Apply
                 </button>
               </div>
@@ -492,54 +403,64 @@ const ServerList = () => {
                       hasImage
                       placeholderIconOff
                       type="sort"
-                      valueClass="!text-sm" 
+                      valueClass="!text-sm"
                     />
                   </div>
                 </div>
               </div>
               <div className="space-y-5 mt-8">
-              {servers.map((server, index) => {
-                // Parse the date-time string to a Date object
-                const wipeDate = new Date(server.next_wipe);
+                {servers.map((server, index) => {
+                  const wipeDate = new Date(server.next_wipe);
 
-                // Format the date
-                const formattedDate = new Intl.DateTimeFormat('default', {
-                  day: '2-digit', 
-                  month: '2-digit'
-                }).format(wipeDate);
+                  const formattedDate = new Intl.DateTimeFormat('default', {
+                    day: '2-digit',
+                    month: '2-digit'
+                  }).format(wipeDate);
 
-                // Format the time
-                const formattedTime = new Intl.DateTimeFormat('default', {
-                  hour: '2-digit', 
-                  minute: '2-digit',
-                  hour12: false // Use 24-hour format
-                }).format(wipeDate);
+                  const formattedTime = new Intl.DateTimeFormat('default', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                  }).format(wipeDate);
 
-                // Combine formatted date and time
-                const formattedWipeDate = `${formattedDate} ${formattedTime}`;
+                  const formattedWipeDate = `${formattedDate} ${formattedTime}`;
 
-                return (
-                  <div className="server-wrapper bg-black-700/80 flex md:gap-12 gap-4 md:flex-row flex-col justify-between rounded-lg relative md:px-6 md:pe-12 hover:shadow-[5px_5px_20px_0px_#CE402A] transition duration-350 ease-in-out ">
-                    <div className="flex max-sm:items-start max-md:p-6 max-md:pb-0 max-md:gap-2 md:pl-0 md:p-8">
-                      <div className="grid md:grid-cols-[100px_100px] place-content-center">
-                        <svg
-                          className="h-11 w-11 max-md:h-6 max-md:w-11 fill-none stroke-primary transition duration-300 ease-in-out hover:fill-primary"
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                        >
-                          <path d="M12 .587l3.515 7.125 7.485.688-5.421 5.277 1.421 7.323-6.5-3.412-6.5 3.412 1.421-7.323-5.421-5.277 7.485-.688z" />
-                        </svg>
-                        <img
-                          className="md:block hidden self-center"
-                          src="./images/england.png"
-                          alt=""
-                        />
+                  return (
+                    <div className="server-wrapper bg-black-700/80 flex md:gap-12 gap-4 md:flex-row flex-col justify-between rounded-lg relative md:px-6 md:pe-12 hover:shadow-[5px_5px_20px_0px_#CE402A] transition duration-350 ease-in-out " key={index}>
+                      <div className="flex max-sm:items-start max-md:p-6 max-md:pb-0 max-md:gap-2 md:pl-0 md:p-8">
+                        <div className="grid md:grid-cols-[100px_100px] place-content-center">
+                          <svg
+                            className="h-11 w-11 max-md:h-6 max-md:w-11 fill-none stroke-primary transition duration-300 ease-in-out hover:fill-primary"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                          >
+                            <path d="M12 .587l3.515 7.125 7.485.688-5.421 5.277 1.421 7.323-6.5-3.412-6.5 3.412 1.421-7.323-5.421-5.277 7.485-.688z" />
+                          </svg>
+                          <img
+                            className="md:block hidden self-center"
+                            src="./images/england.png"
+                            alt=""
+                          />
+                        </div>
+                        <div className="text-center">
+                          <p className="text-lg max-md:text-sm text-white font-extrabold  text-center break-all">
+                            {server.name}
+                          </p>
+                          <p className="text-sm text-white text-center max-md:hidden">
+                            Rank:{" "}
+                            <span className="text-primary">{server.rank}</span> |
+                            Type:
+                            <span className="text-primary"> Modded</span> | AVG
+                            Players:
+                            <span className="text-primary">
+                              {" "}
+                              {server.max_population_last_wipe}
+                            </span>
+                          </p>
+                        </div>
                       </div>
-                      <div className="text-center">
-                        <p className="text-lg max-md:text-sm text-white font-extrabold  text-center break-all">
-                          {server.name}
-                        </p>
-                        <p className="text-sm text-white text-center max-md:hidden">
+                      <div className="max-md:w-full flex-shrink-0">
+                        <p className="text-sm text-white text-center md:hidden mb-2">
                           Rank:{" "}
                           <span className="text-primary">{server.rank}</span> |
                           Type:
@@ -550,39 +471,25 @@ const ServerList = () => {
                             {server.max_population_last_wipe}
                           </span>
                         </p>
-                      </div>
-                    </div>
-                    <div className="max-md:w-full flex-shrink-0">
-                      <p className="text-sm text-white text-center md:hidden mb-2">
-                        Rank:{" "}
-                        <span className="text-primary">{server.rank}</span> |
-                        Type:
-                        <span className="text-primary"> Modded</span> | AVG
-                        Players:
-                        <span className="text-primary">
-                          {" "}
-                          {server.max_population_last_wipe}
-                        </span>
-                      </p>
-                      <div className="bg-primary hover:bg-primary px-2 py-4 max-md:py-1.5 text-white text-center font-medium text-xl  md:min-h-[142px] h-full font-Rammetto flex items-center justify-between flex-col max-md:gap-1.5 max-md:mb-4">
-                        <div className="flex flex-col max-md:flex-row">
-                          <span>WIPE IN</span>
-                          <span className="text-black"> 5h</span>
-                        </div>
+                        <div className="bg-primary hover:bg-primary px-2 py-4 max-md:py-1.5 text-white text-center font-medium text-xl  md:min-h-[142px] h-full font-Rammetto flex items-center justify-between flex-col max-md:gap-1.5 max-md:mb-4">
+                          <div className="flex flex-col max-md:flex-row">
+                            <span>WIPE IN</span>
+                            <span className="text-black"> 5h</span>
+                          </div>
 
-                        <div className="text-[11px] ">{formattedWipeDate}</div>
+                          <div className="text-[11px] ">{formattedWipeDate}</div>
+                        </div>
+                        <button className="bg-transparent h-full w-full md:hidden mb-4 text-white text-lg font-bold inline-block text-center">
+                          Connect
+                        </button>
                       </div>
-                      <button className="bg-transparent h-full w-full md:hidden mb-4 text-white text-lg font-bold inline-block text-center">
-                        Connect
-                      </button>
+                      <img
+                        className="absolute right-2 top-2 hidden md:block"
+                        src="./images/verified.png"
+                        alt=""
+                      />
                     </div>
-                    <img
-                      className="absolute right-2 top-2 hidden md:block"
-                      src="./images/verified.png"
-                      alt=""
-                    />
-                  </div>
-                );
+                  );
                 })}
 
                 <div className="flex items-center justify-center gap-1 !mt-24 max-md:hidden">
