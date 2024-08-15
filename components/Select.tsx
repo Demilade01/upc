@@ -1,6 +1,7 @@
-import { Select, SelectItem, Avatar, SelectSection } from "@nextui-org/react";
+import React from 'react';
+import { Select, SelectItem } from "@nextui-org/react";
 import Image from "next/image";
-import arrow from "../public/images/arrow.svg";
+
 export default function LangDropdown({
   data,
   type = "",
@@ -8,31 +9,35 @@ export default function LangDropdown({
   valueClass,
   hasImage,
   placeholderIconOff,
+  defaultValue,
+  onChange,
 }: any) {
+  const defaultItem = data.find(item => item.name === defaultValue) || data[0];
+
   return (
     <div className="">
       <Select
-        aria-label="Select language"
+        aria-label="Select option"
         items={data}
+        defaultSelectedKeys={[defaultItem.id.toString()]}
         placeholder={
           <div
-            className={`flex items-center ${
-              type === "sort" && "justify-center"
-            }  gap-2`}
+            className={`flex items-center ${type === "sort" && "justify-center"
+              }  gap-2`}
           >
             {placeholderIconOff
               ? null
               : hasImage && (
-                  <Image
-                    className="flex-shrink-0 max-w-5 h-auto"
-                    src={data[0].img}
-                    alt={data[0].name}
-                    height={9}
-                    width={14}
-                  />
-                )}
+                <Image
+                  className="flex-shrink-0 max-w-5 h-auto"
+                  src={defaultItem.img}
+                  alt={defaultItem.name}
+                  height={9}
+                  width={14}
+                />
+              )}
             <p className="text-white">
-              {type === "sort" ? "Sort By" : data[0].name}
+              {type === "sort" ? "Sort By" : defaultItem.name}
             </p>
           </div>
         }
@@ -41,8 +46,7 @@ export default function LangDropdown({
           selectorIcon: "!relative right-[unset] flex-shrink-0",
           label: "group-data-[filled=true]:-translate-y-5",
           trigger: [
-            `!text-white bg-black-700 hover:bg-gray-800 font-medium rounded-lg !h-[unset] !min-h-[unset] ${valueClass} text-xs ${
-              customClass ? customClass : " px-4 py-2"
+            `!text-white bg-black-700 hover:bg-gray-800 font-medium rounded-lg !h-[unset] !min-h-[unset] ${valueClass} text-xs ${customClass ? customClass : " px-4 py-2"
             } `,
             "data-[hover=true]:bg-gray-800",
             `${type === "sort" ? "flex-row-reverse" : ""}`,
@@ -82,19 +86,18 @@ export default function LangDropdown({
             ],
           },
         }}
+        onChange={(e) => onChange && onChange(e.target.value)}
         renderValue={(items) => {
           return items.map((item) => (
             <div
               key={item.key}
-              className={`flex items-center  ${
-                type === "sort" && "justify-center flex-row-reverse"
-              } gap-2`}
+              className={`flex items-center  ${type === "sort" && "justify-center flex-row-reverse"
+                } gap-2`}
             >
               {hasImage && (
                 <Image
-                  className={`flex-shrink-0 max-w-5 h-auto ${
-                    type === "sort" && "ml-auto"
-                  }`}
+                  className={`flex-shrink-0 max-w-5 h-auto ${type === "sort" && "ml-auto"
+                    }`}
                   src={item.data.img}
                   alt={item.data.name}
                   height={9}

@@ -1,12 +1,15 @@
-// pages/index.js
+import { useState } from 'react';
 import LanguageAndCountrySelector from "../components/LanguageAndCountrySelector";
 import Header from "../components/Header";
-import SeverList from "../components/ServerList";
+import ServerList from "../components/ServerList";
 import Image from "next/image";
-import Head from "next/head"; 
+import Head from "next/head";
 import { NextUIProvider } from "@nextui-org/react";
 
 export default function Home() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [serverType, setServerType] = useState('all');
+
   return (
     <>
       <Head>
@@ -26,8 +29,15 @@ export default function Home() {
       </Head>
       <NextUIProvider>
         <LanguageAndCountrySelector />
-        <Header />
-        <SeverList />
+        <Header
+          setSearchQuery={setSearchQuery}
+          serverType={serverType}
+          setServerType={setServerType}
+        />
+        <ServerList
+          searchQuery={searchQuery}
+          serverType={serverType}
+        />
       </NextUIProvider>
     </>
   );

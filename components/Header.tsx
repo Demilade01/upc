@@ -1,7 +1,25 @@
 import { useState } from 'react';
 import Link from 'next/link';
 
-const Header = () => {
+const Header = ({ setSearchQuery, serverType, setServerType }) => {
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const handleServerTypeChange = (type) => {
+    if (type !== 'favourites' && type !== serverType) {
+      setServerType(type);
+    }
+  };
+
+  const serverTypes = [
+    { type: 'all', label: 'All', icon: null },
+    { type: 'official', label: 'Official', icon: './images/verify.png' },
+    { type: 'modded', label: 'Modded', icon: './images/modded.png' },
+    { type: 'community', label: 'Community', icon: './images/star.png' },
+    { type: 'favourites', label: 'Favourites', icon: './images/star.png' },
+  ];
+
   return (
     <header>
       <div className="container">
@@ -14,15 +32,16 @@ const Header = () => {
             </Link>
 
             <div className="flex justify-between">
-              <Link href="/">
+              <Link href="https://discord.gg/gKR9zszb" target='_blank'>
                 <span className="hover:opacity-75 transition ease-in-out duration-300">
-                  <img src="./images/discord.png" alt="Notifications" />
+                  <img src="./images/discord.png" alt="Discord" />
                 </span>
               </Link>
 
-              <Link href="/">
+              {/* TODO: Uncomment when notifications are implemented */}
+              {/* <Link href="/">
                 <span className="relative hover:opacity-75">
-                  <img src="./images/Union.png" alt="Ghost" />
+                  <img src="./images/Union.png" alt="Notifications" />
                   <div className="absolute top-[-10px] right-[-10px] bg-primary text-white rounded-full w-4 h-4 flex items-center justify-center text-xs">
                     3
                   </div>
@@ -33,7 +52,7 @@ const Header = () => {
                 <span className="hover:opacity-75 transition ease-in-out duration-300">
                   <img src="./images/f7.png" alt="Gift" />
                 </span>
-              </Link>
+              </Link> */}
             </div>
           </div>
 
@@ -43,6 +62,7 @@ const Header = () => {
                 className="bg-black-700 rounded-lg border-none p-2.5 ps-[55px] text-white placeholder-gray-450 font-bold w-full focus:ring-primary"
                 type="search"
                 placeholder="Search by server name"
+                onChange={handleSearchChange}
               />
               <div className="absolute top-[50%] translate-y-[-50%] left-4">
                 <img src="./images/search-icon.png" alt="" />
@@ -50,33 +70,22 @@ const Header = () => {
             </div>
 
             <div className="text-white lg:flex hidden justify-between gap-[1px] overflow-x-auto md:w-full">
-            <Link
-                href="#"
-                className="flex items-center justify-center bg-primary md:w-full min-w-20 first:rounded-s-lg last:rounded-e-lg p-3"
-              >
-                <span className="font-bold text-white leading-4">All</span>
-              </Link>
-              <Link
-                href="#"
-                className="md:w-full bg-black-700 hover:bg-gray-800 flex items-center max-sm:flex-shrink-0 max-sm:w-1/2 gap-6 px-4 py-1.5 first:rounded-s-lg last:rounded-e-lg"
-              >
-                <img src="./images/verify.png" alt="" />
-                <span className="font-bold text-white leading-4 mx-auto">Official</span>
-              </Link>
-              <Link
-                href="#"
-                className="md:w-full bg-black-700 hover:bg-gray-800 flex items-center max-sm:flex-shrink-0 max-sm:w-1/2 gap-6 px-4 py-1.5 first:rounded-s-lg last:rounded-e-lg"
-              >
-                <img src="./images/modded.png" alt="" />
-                <span className="font-bold text-white leading-4 mx-auto">Modded</span>
-              </Link>
-              <Link
-                href="#"
-                className="md:w-full bg-black-700 hover:bg-gray-800 flex items-center max-sm:flex-shrink-0 max-sm:w-1/2 gap-6 px-4 py-1.5 first:rounded-s-lg last:rounded-e-lg"
-              >
-                <img src="./images/star.png" alt="" />
-                <span className="font-bold text-white leading-4 mx-auto">Favourites</span>
-              </Link>
+              {serverTypes.map(({ type, label, icon }) => (
+                <button
+                  key={type}
+                  onClick={() => handleServerTypeChange(type)}
+                  className={`md:w-full flex items-center justify-center gap-2 px-4 py-3 first:rounded-s-lg last:rounded-e-lg ${serverType === type
+                      ? 'bg-primary'
+                      : type === 'favourites'
+                        ? 'bg-black-700 opacity-50 cursor-not-allowed'
+                        : 'bg-black-700 hover:bg-gray-800'
+                    }`}
+                  disabled={type === 'favourites'}
+                >
+                  {icon && <img src={icon} alt="" className="w-5 h-5" />}
+                  <span className="font-bold text-white leading-4">{label}</span>
+                </button>
+              ))}
             </div>
           </div>
         </nav>

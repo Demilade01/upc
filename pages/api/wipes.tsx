@@ -2,16 +2,56 @@
 import clientPromise from "../../lib/mongodb";
 
 export default async function handler(req: any, res: any) {
-  const { page = 1, limit = 10, maximumPopulation, nextWipe, mapSize, regions, groupLimit, teamUILimit } = req.query;
+  const { page = 1, limit = 10, maximumPopulation, nextWipe, mapSize, regions, groupLimit, teamUILimit, sort, serverType, rank } = req.query;
   const offset = (page - 1) * limit;
 
   const filters = {
     next_wipe: { $gt: new Date() },
+    name: {
+      $not: {
+        $regex: "(Sandbox|Noclip|Training,Creative,AimTrain)",
+        $options: "i",
+      },
+    },
   };
 
+  if (req.query.searchQuery) {
+    filters.name = { $regex: req.query.searchQuery, $options: 'i' };
+  }
+
+  if (rank) {
+    let minRank, maxRank;
+
+    if (Array.isArray(rank)) {
+      // If rank is an array (e.g., ['0', '200']), use the first two elements
+      minRank = Number(rank[0]);
+      maxRank = Number(rank[1]);
+    } else {
+      // If rank is a string, split it into min and max
+      [minRank, maxRank] = rank.split(',').map(Number);
+    }
+
+    // Ensure minRank and maxRank are valid numbers before applying the filter
+    if (!isNaN(minRank) && !isNaN(maxRank)) {
+      filters.rank = { $gte: minRank, $lte: maxRank };
+    }
+  }
+
   if (maximumPopulation) {
-    const [minPop, maxPop] = maximumPopulation.split(',').map(Number);
-    filters.max_population_last_wipe = { $gte: minPop, $lte: maxPop };
+    let minPop, maxPop;
+    if (Array.isArray(maximumPopulation)) {
+      [minPop, maxPop] = maximumPopulation.map(Number);
+    } else {
+      [minPop, maxPop] = maximumPopulation.split(',').map(Number);
+    }
+    if (!isNaN(minPop) && !isNaN(maxPop)) {
+      filters.max_population_last_wipe = { $gte: 1, $lte: maxPop };
+    }
+  }
+
+  if (serverType && serverType !== 'all') {
+    console.log(serverType);
+    filters.server_type = serverType;
   }
 
   if (nextWipe) {
@@ -20,13 +60,20 @@ export default async function handler(req: any, res: any) {
   }
 
   if (mapSize) {
-    const [minSize, maxSize] = mapSize.split(',').map(Number);
+    let minSize, maxSize;
+    if (Array.isArray(mapSize)) {
+      [minSize, maxSize] = mapSize.map(Number);
+    } else {
+      [minSize, maxSize] = mapSize.split(',').map(Number);
+    }
     console.log(minSize, maxSize);
-    filters.world_size = { $gte: minSize, $lte: maxSize };
+    if (!isNaN(minSize) && !isNaN(maxSize)) {
+      filters.world_size = { $gte: minSize, $lte: maxSize };
+    }
   }
 
   if (regions && regions.length) {
-    filters.region = { $in: regions.split(',') };
+    filters.region = { $in: Array.isArray(regions) ? regions : regions.split(',') };
   }
 
   if (groupLimit) {
@@ -66,20 +113,40 @@ export default async function handler(req: any, res: any) {
     }
   }
 
+  let sortOption = {};
+  console.log(sort);
+  switch (sort) {
+    case 'wipe_time':
+      sortOption = { next_wipe: 1 };
+      break;
+    case 'rank':
+      sortOption = { rank: 1 };
+      break;
+    case 'avg_players':
+      sortOption = { max_population_last_wipe: -1 }; // Sorting by max_population_last_wipe in descending order
+      break;
+    default:
+      sortOption = { next_wipe: 1 }; // Default sort by wipe time
+  }
+
   try {
     const client = await clientPromise;
     const db = client.db("upcoming_wipes");
     const serversCollection = db.collection("servers");
 
+    // Get the total number of servers
+    const totalServers = await serversCollection.countDocuments(filters);
+
     const servers = await serversCollection
       .find(filters)
-      //.sort({ next_wipe: 1 })
+      .sort(sortOption)
       .skip(offset)
-      .limit(limit)
+      .limit(parseInt(limit))
       .toArray();
 
-    return res.status(200).json({ status: "success", data: servers });
+    return res.status(200).json({ status: "success", data: servers, total: totalServers });
   } catch (e: any) {
+    console.error(e);
     return res.status(500).json({ status: "error", message: e.message });
   }
 }

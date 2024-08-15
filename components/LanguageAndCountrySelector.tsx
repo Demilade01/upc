@@ -65,21 +65,19 @@ const LanguageAndCountrySelector = () => {
     <div className="top-cta">
       <div className="container">
         <div className="flex justify-end items-center py-5 space-x-5 relative z-[1] max-lg:hidden">
-          {/* Country Dropdown */}
-          <div className="relative flex items-center">
+          {/* <div className="relative flex items-center">
             <div className=" text-white text-sm">Country:</div>
             <div className=" ml-3 w-full">
               <LangDropdown valueClass="!text-xs" data={CountryContent} />
             </div>
           </div>
 
-          {/* Language Dropdown */}
           <div className="relative flex items-center">
             <div className=" text-white text-sm">Language:</div>
             <div className="ml-3 w-full">
               <LangDropdown valueClass="!text-xs" data={LangContent} hasImage />
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
