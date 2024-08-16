@@ -33,7 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       status: "success",
       data: responseLimits,
     });
-  } catch (e) {
-    return res.status(500).json({ status: "error", message: e.message });
+  } catch (error: any) {
+    return res.status(500).json({ status: "error", message: error.message });
   }
 }

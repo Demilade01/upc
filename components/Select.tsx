@@ -1,6 +1,23 @@
 import React from 'react';
-import { Select, SelectItem } from "@nextui-org/react";
+import { Select, SelectItem, SelectProps, SelectedItems } from "@nextui-org/react";
 import Image from "next/image";
+
+interface DataItem {
+  id: string | number;
+  name: string;
+  img?: string;
+}
+
+interface LangDropdownProps {
+  data: DataItem[];
+  type?: "sort" | "";
+  customClass?: string;
+  valueClass?: string;
+  hasImage?: boolean;
+  placeholderIconOff?: boolean;
+  defaultValue?: string;
+  onChange?: (value: string) => void;
+}
 
 export default function LangDropdown({
   data,
@@ -11,8 +28,59 @@ export default function LangDropdown({
   placeholderIconOff,
   defaultValue,
   onChange,
-}: any) {
-  const defaultItem = data.find(item => item.name === defaultValue) || data[0];
+}: LangDropdownProps) {
+  const defaultItem = data.find((item) => item.name === defaultValue) || data[0];
+
+  const renderPlaceholder = (item: DataItem) => (
+    <div className={`flex items-center ${type === "sort" ? "justify-center" : ""} gap-2`}>
+      {!placeholderIconOff && hasImage && item.img && (
+        <Image
+          className="flex-shrink-0 max-w-5 h-auto"
+          src={item.img}
+          alt={item.name}
+          height={9}
+          width={14}
+        />
+      )}
+      <p className="text-white">
+        {type === "sort" ? "Sort By" : item.name}
+      </p>
+    </div>
+  );
+
+  const renderValue = (items: SelectedItems<DataItem>) => {
+    return items.map((item) => (
+      <div
+        key={item.key}
+        className={`flex items-center ${type === "sort" ? "justify-center flex-row-reverse" : ""} gap-2`}
+      >
+        {hasImage && item.data?.img && (
+          <Image
+            className={`flex-shrink-0 max-w-5 h-auto ${type === "sort" ? "ml-auto" : ""}`}
+            src={item.data.img}
+            alt={item.data.name}
+            height={9}
+            width={14}
+          />
+        )}
+        <p className={type === "sort" ? "ml-auto" : ""}>{item?.data?.name}</p>
+      </div>
+    ));
+  };
+
+  const selectClassNames: SelectProps["classNames"] = {
+    selectorIcon: "!relative right-[unset] flex-shrink-0",
+    label: "group-data-[filled=true]:-translate-y-5",
+    trigger: [
+      `!text-white bg-black-700 hover:bg-gray-800 font-medium rounded-lg !h-[unset] !min-h-[unset] ${valueClass} text-xs ${customClass || "px-4 py-2"}`,
+      "data-[hover=true]:bg-gray-800",
+      type === "sort" ? "flex-row-reverse" : "",
+    ],
+    listboxWrapper: "max-h-[200px]",
+    listbox: "p-0 item-divider",
+    innerWrapper: "!w-full !h-[unset] !min-h-[unset]",
+    value: `${valueClass} !overflow-visible !text-white !w-full`,
+  };
 
   return (
     <div className="">
@@ -20,42 +88,8 @@ export default function LangDropdown({
         aria-label="Select option"
         items={data}
         defaultSelectedKeys={[defaultItem.id.toString()]}
-        placeholder={
-          <div
-            className={`flex items-center ${type === "sort" && "justify-center"
-              }  gap-2`}
-          >
-            {placeholderIconOff
-              ? null
-              : hasImage && (
-                <Image
-                  className="flex-shrink-0 max-w-5 h-auto"
-                  src={defaultItem.img}
-                  alt={defaultItem.name}
-                  height={9}
-                  width={14}
-                />
-              )}
-            <p className="text-white">
-              {type === "sort" ? "Sort By" : defaultItem.name}
-            </p>
-          </div>
-        }
         className="font-medium"
-        classNames={{
-          selectorIcon: "!relative right-[unset] flex-shrink-0",
-          label: "group-data-[filled=true]:-translate-y-5",
-          trigger: [
-            `!text-white bg-black-700 hover:bg-gray-800 font-medium rounded-lg !h-[unset] !min-h-[unset] ${valueClass} text-xs ${customClass ? customClass : " px-4 py-2"
-            } `,
-            "data-[hover=true]:bg-gray-800",
-            `${type === "sort" ? "flex-row-reverse" : ""}`,
-          ],
-          listboxWrapper: "max-h-[200px]",
-          listbox: "p-0 item-divider",
-          innerWrapper: "!w-full !h-[unset] !min-h-[unset]",
-          value: `${valueClass} !overflow-visible !text-white !w-full `,
-        }}
+        classNames={selectClassNames}
         listboxProps={{
           itemClasses: {
             base: [
@@ -87,39 +121,17 @@ export default function LangDropdown({
           },
         }}
         onChange={(e) => onChange && onChange(e.target.value)}
-        renderValue={(items) => {
-          return items.map((item) => (
-            <div
-              key={item.key}
-              className={`flex items-center  ${type === "sort" && "justify-center flex-row-reverse"
-                } gap-2`}
-            >
-              {hasImage && (
-                <Image
-                  className={`flex-shrink-0 max-w-5 h-auto ${type === "sort" && "ml-auto"
-                    }`}
-                  src={item.data.img}
-                  alt={item.data.name}
-                  height={9}
-                  width={14}
-                />
-              )}
-              <p className={`${type === "sort" && "ml-auto"}`}>
-                {item.data.name}
-              </p>
-            </div>
-          ));
-        }}
+        renderValue={renderValue}
       >
-        {(user) => (
-          <SelectItem key={user.id} textValue={user.name}>
+        {(item) => (
+          <SelectItem key={item.id} textValue={item.name}>
             <div className={`flex gap-2 items-center justify-between`}>
-              <p className={`${type === "sort" && "ml-auto"}`}>{user.name}</p>
-              {hasImage && (
+              <p className={type === "sort" ? "ml-auto" : ""}>{item.name}</p>
+              {hasImage && item.img && (
                 <Image
-                  className={`flex-shrink-0 max-w-5 h-auto ${type === "sort" && "ml-auto"}`}
-                  src={user.img}
-                  alt={user.name}
+                  className={`flex-shrink-0 max-w-5 h-auto ${type === "sort" ? "ml-auto" : ""}`}
+                  src={item.img}
+                  alt={item.name}
                   height={9}
                   width={14}
                 />

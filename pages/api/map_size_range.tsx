@@ -1,6 +1,7 @@
+import { NextApiRequest, NextApiResponse } from 'next';
 import clientPromise from "../../lib/mongodb";
 
-export default async function handler(req, res) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     const client = await clientPromise;
     const db = client.db("upcoming_wipes");
@@ -51,7 +52,7 @@ export default async function handler(req, res) {
       status: "success",
       data: { minSize, maxSize, marks, step },
     });
-  } catch (e) {
-    return res.status(500).json({ status: "error", message: e.message });
+  } catch (error) {
+    return res.status(500).json({ status: "error", message: (error instanceof Error ? error.message : "Unknown error") });
   }
 }

@@ -1,6 +1,7 @@
 import clientPromise from "../../lib/mongodb";
+import type { NextApiRequest, NextApiResponse } from 'next';
 
-export default async function handler(req, res) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     const client = await clientPromise;
     const db = client.db("upcoming_wipes");
@@ -29,7 +30,7 @@ export default async function handler(req, res) {
     const { minPopulation, maxPopulation } = minMaxValues[0];
 
     // Define a function to round up to the nearest step
-    const roundUpToStep = (value, step) => Math.ceil(value / step) * step;
+    const roundUpToStep = (value: number, step: number) => Math.ceil(value / step) * step;
 
     // Calculate the step value
     const range = maxPopulation - minPopulation;
@@ -56,7 +57,7 @@ export default async function handler(req, res) {
       status: "success",
       data: { minPopulation, maxPopulation: roundedMaxPopulation, marks, step },
     });
-  } catch (e) {
-    return res.status(500).json({ status: "error", message: e.message });
+  } catch (error: any) {
+    return res.status(500).json({ status: "error", message: error.message });
   }
 }

@@ -33,7 +33,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       status: "success",
       data: responseLimits,
     });
-  } catch (e) {
-    return res.status(500).json({ status: "error", message: e.message });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+    return res.status(500).json({ status: "error", message: errorMessage });
   }
 }

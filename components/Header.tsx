@@ -1,12 +1,18 @@
-import { useState } from 'react';
+import { useState, ChangeEvent } from 'react';
 import Link from 'next/link';
 
-const Header = ({ setSearchQuery, serverType, setServerType }) => {
-  const handleSearchChange = (e) => {
+interface HeaderProps {
+  setSearchQuery: (query: string) => void;
+  serverType: string;
+  setServerType: (type: string) => void;
+}
+
+const Header = ({ setSearchQuery, serverType, setServerType }: HeaderProps) => {
+  const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
 
-  const handleServerTypeChange = (type) => {
+  const handleServerTypeChange = (type: string) => {
     if (type !== 'favourites' && type !== serverType) {
       setServerType(type);
     }

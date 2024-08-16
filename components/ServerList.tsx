@@ -11,11 +11,19 @@ const SortContent = [
   { id: 3, img: sortIcon, name: "AVG Players" },
 ];
 
-const capitalizeFirstLetter = (string) => {
+const capitalizeFirstLetter = (string: string) => {
   return string.charAt(0).toUpperCase() + string.slice(1);
 };
 
-const getTimeUntilWipe = (wipeDate) => {
+interface Server {
+  next_wipe: string;
+  name: string;
+  rank: number;
+  server_type: string;
+  max_population_last_wipe: number;
+}
+
+const getTimeUntilWipe = (wipeDate: Date) => {
   const now = new Date();
   const timeDiff = wipeDate.getTime() - now.getTime();
 
@@ -39,7 +47,12 @@ const getTimeUntilWipe = (wipeDate) => {
   }
 };
 
-const ServerList = ({ searchQuery, serverType }) => {
+interface ServerListProps {
+  searchQuery?: string;
+  serverType?: string;
+}
+
+const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
   const [toggleMenu, setToggleMenu] = useState(false);
   const handleFilterToggle = () => {
     setToggleMenu(!toggleMenu);
@@ -55,11 +68,11 @@ const ServerList = ({ searchQuery, serverType }) => {
   const [currentPage, setCurrentPage] = useState(1); // Current page
   const itemsPerPage = 10; // Number of servers to display per page
 
-  const handleSortChange = (value) => {
-    const sortMap = {
-      1: "wipe_time",
-      2: "rank",
-      3: "avg_players"
+  const handleSortChange = (value: string) => {
+    const sortMap: { [key: string]: string } = {
+      "1": "wipe_time",
+      "2": "rank",
+      "3": "avg_players"
     };
     setSortOption(sortMap[value] || "wipe_time");
     setCurrentPage(1);
@@ -120,19 +133,7 @@ const ServerList = ({ searchQuery, serverType }) => {
     step: 1000
   });
 
-  const calculateSliderPoints = (min, max) => {
-    const range = max - min;
-    const step = Math.round(range / 4); // 4 steps for 5 points
-    return [
-      min,
-      min + step,
-      min + 2 * step,
-      min + 3 * step,
-      max
-    ];
-  };
-
-  const handleFilterChange = (filterName, value) => {
+  const handleFilterChange = (filterName: string, value: any) => {
     setFilters((prevFilters) => ({ ...prevFilters, [filterName]: value }));
     setCurrentPage(1); // Reset to first page when filters change
   };
@@ -539,7 +540,10 @@ const ServerList = ({ searchQuery, serverType }) => {
                 <div className="flex-1 sort">
                   <div className="inline-block text-right lg:w-[258px] w-full mt-2">
                     <LangDropdown
-                      data={SortContent}
+                      data={SortContent.map(content => ({
+                        ...content,
+                        img: content.img.src
+                      }))}
                       hasImage
                       placeholderIconOff
                       type="sort"
@@ -553,7 +557,7 @@ const ServerList = ({ searchQuery, serverType }) => {
               {/* If loading is false, show the code below*/}
               {!loading && (
                 <div className="space-y-5 mt-8">
-                  {servers.map((server, index) => {
+                  {servers.map((server: Server, index: number) => {
                     const wipeDate = new Date(server.next_wipe);
 
                     const formattedDate = new Intl.DateTimeFormat('default', {
