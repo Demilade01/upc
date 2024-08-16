@@ -222,7 +222,6 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
     fetchServers();
   }, [filters, searchQuery, sortOption, serverType, currentPage]);
 
-  // TODO: To change because we don't have to always fetch everything
   useEffect(() => {
     fetchRegions();
     fetchGroupLimits();
@@ -232,7 +231,7 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
   const totalPages = Math.ceil(totalServers / itemsPerPage);
 
   const generatePageNumbers = () => {
-    let startPage, endPage;
+    let startPage: number, endPage: number;
 
     if (totalPages <= 5) {
       // Se há 5 ou menos páginas, mostra todas
