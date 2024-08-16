@@ -22,8 +22,8 @@ const Header = ({ setSearchQuery, serverType, setServerType }: HeaderProps) => {
     { type: 'all', label: 'All', icon: null },
     { type: 'official', label: 'Official', icon: './images/verify.png' },
     { type: 'modded', label: 'Modded', icon: './images/modded.png' },
-    { type: 'community', label: 'Community', icon: './images/star.png' },
-    { type: 'favourites', label: 'Favourites', icon: './images/star.png' },
+    { type: 'community', label: 'Community', icon: './images/star-icon.png' },
+    { type: 'favourites', label: 'Favourites', icon: './images/star-icon.png' },
   ];
 
   return (
