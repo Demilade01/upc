@@ -13,7 +13,9 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Upcoming Wipes - Latest Rust Server Wipes</title>
+        <title>Find & Compare Rust Servers by Wipe Times, Population & Rank | Upcoming Wipes</title>
+        <meta name="description" content="Find your perfect Rust server with Upcoming Wipes (UPC). Instantly filter by population, wipe schedule, region, and more. Stay ahead of the competition with the freshest and upcoming wipes for your next thrilling Rust adventure." />
+        <meta name="keywords" content="Rust server list, Rust server finder, Rust wipe time, Upcoming Rust wipes, Fresh Rust servers, Best modded rust servers, Vanilla Rust servers, Rust PvP servers, Rust PvE servers, Best Rust servers, Rust solo/duo/trio servers, Rust servers by wipe time, Rust server hosting, Rust server tracker, Rust servers North America, EU Rust servers, Asia Rust servers, Rust server browser, New Rust servers, Rust wipe schedule, Rust server rankings, Rust roleplay servers, Rust server status list, Rust servers, Rust console servers" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
         <link rel="icon" href="images/favicon.ico" />

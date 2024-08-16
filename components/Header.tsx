@@ -33,14 +33,14 @@ const Header = ({ setSearchQuery, serverType, setServerType }: HeaderProps) => {
           <div className="space-y-10 max-lg:space-y-8 gap-6 w-full max-w-[193px] mx-auto">
             <Link href="/">
               <span>
-                <img src="./images/logo.png" alt="" className="mx-auto" />
+                <img src="./images/logo.png" alt="Upcoming Wipes Logo" className="mx-auto" />
               </span>
             </Link>
 
-            <div className="flex justify-between">
+            <div className="flex justify-center">
               <Link href="https://discord.gg/gKR9zszb" target='_blank'>
                 <span className="hover:opacity-75 transition ease-in-out duration-300">
-                  <img src="./images/discord.png" alt="Discord" />
+                  <img src="./images/discord.png" alt="Discord Logo" />
                 </span>
               </Link>
 
@@ -88,7 +88,7 @@ const Header = ({ setSearchQuery, serverType, setServerType }: HeaderProps) => {
                     }`}
                   disabled={type === 'favourites'}
                 >
-                  {icon && <img src={icon} alt="" className="w-5 h-5" />}
+                  {icon && <img src={icon} alt="Server Type Icon" className="w-5 h-5" />}
                   <span className="font-bold text-white leading-4">{label}</span>
                 </button>
               ))}

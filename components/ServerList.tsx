@@ -21,6 +21,7 @@ interface Server {
   rank: number;
   server_type: string;
   max_population_last_wipe: number;
+  country_code: string;
 }
 
 const getTimeUntilWipe = (wipeDate: Date) => {
@@ -285,7 +286,7 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
                     <img
                       className="brightness-[10] h-full"
                       src="./images/cancel.png"
-                      alt=""
+                      alt="Close Filters"
                     />
                   </div>
                 </div>
@@ -530,7 +531,7 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
                       >
                         <span className="">Filter</span>
                         <span className="inline-block">
-                          <img src="./images/settings-orange.png" alt="" />
+                          <img src="./images/settings-orange.png" alt="Filter Settings" />
                         </span>
                       </button>
                     </div>
@@ -586,8 +587,8 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
                             </svg>
                             <img
                               className="md:block hidden self-center"
-                              src="./images/england.png"
-                              alt=""
+                              src={`https://flagcdn.com/36x27/${server.country_code.toLowerCase()}.png`}
+                              alt="Server Region Flag"
                             />
                           </div>
                           <div className="text-center">
@@ -621,7 +622,7 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
                           </p>
                           <div className="bg-primary hover:bg-primary px-2 py-4 max-md:py-1.5 text-white text-center font-medium text-xl  md:min-h-[142px] h-full font-Rammetto flex items-center justify-between flex-col max-md:gap-1.5 max-md:mb-4">
                             <div className="flex flex-col max-md:flex-row">
-                              <span>WIPE IN</span>
+                              <span className="mr-2">WIPE IN</span>
                               <span className="text-black">{timeUntilWipe}</span>
                             </div>
 
