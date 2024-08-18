@@ -622,7 +622,7 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
                               />
                             </div>
                           </div>
-                          <div className="text-center">
+                          <div className="flex flex-col justify-center items-center text-center">
                             <p className="text-lg max-md:text-sm text-white font-extrabold text-center break-all">
                               {server.name}
                             </p>
