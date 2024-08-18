@@ -20,6 +20,16 @@ export default function Home() {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
         <link rel="icon" href="images/favicon.ico" />
 
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-VM1G4M6SV5"></script>
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-VM1G4M6SV5');
+          `
+        }} />
+
         <link
           href="https://fonts.googleapis.com/css2?family=Rammetto+One&display=swap"
           rel="stylesheet"
