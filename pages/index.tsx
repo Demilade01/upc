@@ -4,12 +4,16 @@ import Header from "../components/Header";
 import ServerList from "../components/ServerList";
 import Image from "next/image";
 import Head from "next/head";
-import { NextUIProvider } from "@nextui-org/react";
+import { NextUIProvider, Button } from "@nextui-org/react";
 import Link from 'next/link';
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [serverType, setServerType] = useState('all');
+
+  const handleDonateClick = () => {
+    window.open("https://www.paypal.com/donate/?hosted_button_id=T9VCYTHXMG2A6", "_blank");
+  };
 
   return (
     <>
@@ -55,19 +59,28 @@ export default function Home() {
             />
           </main>
           <footer className="bg-black-800 text-white py-6 mt-8 relative">
-            <div className="container mx-auto flex justify-center items-center space-x-8">
-              <Link href="/privacy-policy" className="footer-link group">
-                <span className="relative z-10 group-hover:text-primary transition duration-300">Privacy Policy</span>
-                <span className="absolute inset-0 bg-primary opacity-0 group-hover:opacity-10 rounded transition duration-300"></span>
-              </Link>
-              <div className="w-2 h-2 bg-primary transform rotate-45"></div>
-              <Link href="/terms-and-conditions" className="footer-link group">
-                <span className="relative z-10 group-hover:text-primary transition duration-300">Terms and Conditions</span>
-                <span className="absolute inset-0 bg-primary opacity-0 group-hover:opacity-10 rounded transition duration-300"></span>
-              </Link>
-            </div>
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-50"></div>
-          </footer>
+  <div className="container mx-auto flex justify-center items-center space-x-8">
+    <Link href="/privacy-policy" className="footer-link group relative">
+      <span className="relative z-10 group-hover:text-primary transition duration-300">Privacy Policy</span>
+      <span className="absolute inset-0 bg-primary opacity-0 group-hover:opacity-10 rounded transition duration-300"></span>
+    </Link>
+    <div className="w-2 h-2 bg-primary transform rotate-45"></div>
+    <Link href="/terms-and-conditions" className="footer-link group relative">
+      <span className="relative z-10 group-hover:text-primary transition duration-300">Terms and Conditions</span>
+      <span className="absolute inset-0 bg-primary opacity-0 group-hover:opacity-10 rounded transition duration-300"></span>
+    </Link>
+    <div className="w-2 h-2 bg-primary transform rotate-45"></div>
+    <Button 
+      color="primary" 
+      onClick={handleDonateClick}
+      className="group relative"
+    >
+      <span className="relative z-10 group-hover:text-white transition duration-300">Donate</span>
+      <span className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 rounded transition duration-300"></span>
+    </Button>
+  </div>
+  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-50"></div>
+</footer>
         </div>
       </NextUIProvider>
     </>

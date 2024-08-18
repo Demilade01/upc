@@ -4,6 +4,9 @@ import Link from "next/link";
 import LangDropdown from "./Select";
 import { Slider } from "@nextui-org/react";
 import sortIcon from "../public/images/sort.png";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify';
 
 const SortContent = [
   { id: 1, img: sortIcon, name: "Wipe Time" },
@@ -22,7 +25,18 @@ interface Server {
   server_type: string;
   max_population_last_wipe: number;
   country_code: string;
+  address: string;
+  ip: string;
 }
+
+const copyToClipboard = async (text: string) => {
+  try {
+    await navigator.clipboard.writeText('connect ' + text);
+    toast.success('Server IP copied to clipboard!');
+  } catch (err) {
+    toast.error('Failed to copy server IP to clipboard!');
+  }
+};
 
 const getTimeUntilWipe = (wipeDate: Date) => {
   const now = new Date();
@@ -137,6 +151,10 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
     setFilters((prevFilters) => ({ ...prevFilters, [filterName]: value }));
     setCurrentPage(1);
   };
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [serverType, searchQuery]);
 
   const fetchServers = async () => {
     setLoading(true);
@@ -640,6 +658,12 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
                             </div>
 
                             <div className="text-[11px]">{formattedWipeDate}</div>
+                            <button
+                              onClick={() => copyToClipboard(server.address ?? server.ip)}
+                              className="mt-2 px-4 py-2 bg-black text-white font-inter font-medium rounded-lg bg-gray-800 hover:bg-gray-900 transition duration-300 ease-in-out"
+                            >
+                              Connect
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -678,7 +702,17 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
                       </svg>
                     </button>
                   </div>
-
+                  <ToastContainer
+                    position="top-right"
+                    autoClose={3000}
+                    hideProgressBar={false}
+                    newestOnTop={false}
+                    closeOnClick
+                    rtl={false}
+                    pauseOnFocusLoss
+                    draggable
+                    pauseOnHover
+                  />
                   {/* Mobile Pagination */}
                   <MobilePagination />
                 </div>
@@ -688,6 +722,7 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
         </div>
       </section>
     </main>
+
   );
 };
 

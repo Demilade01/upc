@@ -28,7 +28,7 @@ const Header = ({ setSearchQuery, serverType, setServerType }: HeaderProps) => {
 
   return (
     <header>
-      <div className="container">
+      <div className="container mb-6">
         <nav className="grid lg:grid-cols-[340px_auto] grid-cols-1 gap-4 max-sm:gap-9 max-lg:pt-6">
           <div className="space-y-10 max-lg:space-y-8 gap-6 w-full max-w-[193px] mx-auto">
             <Link href="/">
@@ -37,13 +37,18 @@ const Header = ({ setSearchQuery, serverType, setServerType }: HeaderProps) => {
               </span>
             </Link>
 
-            <div className="flex justify-center">
-              <Link href="https://discord.gg/gKR9zszb" target='_blank'>
-                <span className="hover:opacity-75 transition ease-in-out duration-300">
-                  <img src="./images/discord.png" alt="Discord Logo" />
-                </span>
+            <div className="flex justify-center items-center mb-6 space-x-4">
+              <Link href="https://discord.gg/gKR9zszb" className="cursor-pointer block hover:opacity-75 transition ease-in-out duration-300" target="_blank" rel="noopener noreferrer">
+                <img src="./images/discord.png" alt="Discord Logo" className="mx-auto" />
               </Link>
-
+              <Link
+                href="https://www.paypal.com/donate/?hosted_button_id=T9VCYTHXMG2A6"
+                className="cursor-pointer block hover:opacity-75 transition ease-in-out duration-300"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img src="./images/paypal.png" alt="PayPal Donate" className="mx-auto" style={{ width: '48px', height: '48px' }} />
+              </Link>
               {/* TODO: Uncomment when notifications are implemented */}
               {/* <Link href="/">
                 <span className="relative hover:opacity-75">
@@ -60,6 +65,7 @@ const Header = ({ setSearchQuery, serverType, setServerType }: HeaderProps) => {
                 </span>
               </Link> */}
             </div>
+
           </div>
 
           <div className="space-y-5 z-0 relative">
@@ -81,10 +87,10 @@ const Header = ({ setSearchQuery, serverType, setServerType }: HeaderProps) => {
                   key={type}
                   onClick={() => handleServerTypeChange(type)}
                   className={`md:w-full flex items-center justify-center gap-2 px-4 py-3 first:rounded-s-lg last:rounded-e-lg ${serverType === type
-                      ? 'bg-primary'
-                      : type === 'favourites'
-                        ? 'bg-black-700 opacity-50 cursor-not-allowed'
-                        : 'bg-black-700 hover:bg-gray-800'
+                    ? 'bg-primary'
+                    : type === 'favourites'
+                      ? 'bg-black-700 opacity-50 cursor-not-allowed'
+                      : 'bg-black-700 hover:bg-gray-800'
                     }`}
                   disabled={type === 'favourites'}
                 >
