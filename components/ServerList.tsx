@@ -65,9 +65,9 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
   const [servers, setServers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sortOption, setSortOption] = useState("wipe_time");
-  const [totalServers, setTotalServers] = useState(0); // Total number of servers
-  const [currentPage, setCurrentPage] = useState(1); // Current page
-  const itemsPerPage = 10; // Number of servers to display per page
+  const [totalServers, setTotalServers] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const handleSortChange = (value: string) => {
     const sortMap: { [key: string]: string } = {
@@ -86,13 +86,13 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
     regions: [],
     groupLimit: [],
     teamUILimit: [],
-    rank: [0, 200]
+    rank: [0, 1000]
   });
 
   const [rankSlider, setRankSlider] = useState({
     minValue: 0,
     maxValue: 1000,
-    defaultValue: [0, 200],
+    defaultValue: [0, 1000],
     marks: [
       { value: 0, label: '0' },
       { value: 200, label: '200' },
@@ -119,7 +119,6 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
     step: 200
   });
 
-  // Updated mapSizeSlider with static values
   const [mapSizeSlider, setMapSizeSlider] = useState({
     minValue: 1000,
     maxValue: 5000,
@@ -136,7 +135,7 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
 
   const handleFilterChange = (filterName: string, value: any) => {
     setFilters((prevFilters) => ({ ...prevFilters, [filterName]: value }));
-    setCurrentPage(1); // Reset to first page when filters change
+    setCurrentPage(1);
   };
 
   const fetchServers = async () => {
@@ -152,12 +151,10 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
         queryParams.append('searchQuery', searchQuery);
       }
 
-      // Add server type filter
       if (serverType && serverType !== 'all') {
         queryParams.append('serverType', serverType);
       }
 
-      // Add other filter parameters
       Object.entries(filters).forEach(([key, value]) => {
         if (Array.isArray(value) && value.length > 0) {
           value.forEach(item => queryParams.append(key, item.toString()));
@@ -227,7 +224,7 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
     fetchRegions();
     fetchGroupLimits();
     fetchTeamUILimits();
-  }, [filters]);
+  }, []);
 
   const totalPages = Math.ceil(totalServers / itemsPerPage);
 
@@ -235,11 +232,9 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
     let startPage: number, endPage: number;
 
     if (totalPages <= 5) {
-      // Se há 5 ou menos páginas, mostra todas
       startPage = 1;
       endPage = totalPages;
     } else {
-      // Se há mais de 5 páginas, calcula o range de páginas a mostrar
       if (currentPage <= 3) {
         startPage = 1;
         endPage = 5;
@@ -255,11 +250,32 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
     return Array.from({ length: (endPage - startPage + 1) }, (_, i) => startPage + i);
   };
 
+  const MobilePagination = () => (
+    <div className="flex items-center justify-center gap-2 mt-6 md:hidden">
+      <button
+        onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+        disabled={currentPage === 1}
+        className="px-3 py-1 text-white bg-black-700 rounded-lg hover:bg-primary disabled:opacity-50"
+      >
+        Prev
+      </button>
+      <span className="text-white">
+        Page {currentPage} of {totalPages}
+      </span>
+      <button
+        onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+        disabled={currentPage === totalPages}
+        className="px-3 py-1 text-white bg-black-700 rounded-lg hover:bg-primary disabled:opacity-50"
+      >
+        Next
+      </button>
+    </div>
+  );
+
   return (
     <main>
       <div
-        className={`${toggleMenu ? "fixed" : "hidden"
-          }  inset-0 bg-black/50 z-[2] h-full w-full`}
+        className={`${toggleMenu ? "fixed" : "hidden"} inset-0 bg-black/50 z-[2] h-full w-full`}
         id="overlay"
         onClick={() => {
           setToggleMenu(false);
@@ -267,17 +283,16 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
       ></div>
       <section className="py-5 lg:pt-0 lg:pb-24 lg:mt-[-30px]">
         <div className="container">
-          <div className="grid lg:grid-cols-[340px_auto] grid-flow-row-dense  gap-4">
+          <div className="grid lg:grid-cols-[340px_auto] grid-flow-row-dense gap-4">
             <div
-              className={`${toggleMenu ? "active" : ""
-                } filter-sidebar  lg:h-max lg:mt-[67px] relative space-y-4 max-w-[340px] flex-shrink-0 bg-black-700/80 rounded-lg p-5 text-white md:block `}
+              className={`${toggleMenu ? "active" : ""} filter-sidebar lg:h-max lg:mt-[67px] relative space-y-4 max-w-[340px] flex-shrink-0 bg-black-700/80 rounded-lg p-5 text-white md:block`}
               id="collapsible-content"
             >
               <div className="">
                 <div className="flex justify-between items-center">
                   <h2 className="text-2xl font-bold text-primary">Filters</h2>
                   <div
-                    className="max-lg:block hidden close "
+                    className="max-lg:block hidden close"
                     id="close"
                     onClick={() => {
                       setToggleMenu(false);
@@ -292,7 +307,7 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
                 </div>
               </div>
               <div className="h-[calc(100%_-_90px)] lg:h-auto overflow-y-auto lg:overflow-visible space-y-4">
-                <div className="space-y-4 ">
+                <div className="space-y-4">
                   <div className="">
                     <label className="block text-xl border-b border-primary pb-2 mb-2">
                       Average population on wipe day
@@ -348,7 +363,7 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
                     </label>
                     <div className="relative py-3 px-6">
                       <Slider
-                        key={rankSlider.defaultValue.join('-')} // Use key to force re-render
+                        key={rankSlider.defaultValue.join('-')}
                         step={rankSlider.step}
                         maxValue={rankSlider.maxValue}
                         minValue={rankSlider.minValue}
@@ -395,7 +410,7 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
                     </label>
                     <div className="relative py-3 px-6">
                       <Slider
-                        key={mapSizeSlider.defaultValue.join('-')} // Use key to force re-render
+                        key={mapSizeSlider.defaultValue.join('-')}
                         step={mapSizeSlider.step}
                         maxValue={mapSizeSlider.maxValue}
                         minValue={mapSizeSlider.minValue}
@@ -447,14 +462,14 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
                         <div className="group checkbox-container" key={region}>
                           <input
                             type="checkbox"
-                            className="w-4 h-4 rounded group-hover:bg-primary bg-transparent border-2 border-primary focus:ring-0 focus:ring-offset-0 focus:outline-offset-0 ring-0 focus:shadow-none focus-visible:border-0 text-primary"
+                            className="w-4 h-4 rounded bg-transparent border-2 border-primary focus:ring-0 focus:ring-offset-0 focus:outline-offset-0 ring-0 focus:shadow-none focus-visible:border-0 text-primary cursor-pointer"
                             id={region}
                             onChange={(e) => handleFilterChange(
                               "regions",
                               e.target.checked ? [...filters.regions, region] : filters.regions.filter(r => r !== region)
                             )}
                           />
-                          <label htmlFor={region} className="ml-2">
+                          <label htmlFor={region} className="ml-2 cursor-pointer">
                             {region}
                           </label>
                         </div>
@@ -472,13 +487,13 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
                             <input
                               id={limit}
                               type="checkbox"
-                              className="w-4 h-4 rounded group-hover:bg-primary bg-transparent border-2 border-primary focus:ring-0 focus:ring-offset-0 focus:outline-offset-0 ring-0 focus:shadow-none focus-visible:border-0 text-primary"
+                              className="w-4 h-4 rounded bg-transparent border-2 border-primary focus:ring-0 focus:ring-offset-0 focus:outline-offset-0 ring-0 focus:shadow-none focus-visible:border-0 text-primary cursor-pointer"
                               onChange={(e) => handleFilterChange(
                                 "groupLimit",
                                 e.target.checked ? [...filters.groupLimit, limit] : filters.groupLimit.filter(l => l !== limit)
                               )}
                             />
-                            <label htmlFor={limit} className="ml-2">
+                            <label htmlFor={limit} className="ml-2 cursor-pointer">
                               {limit}
                             </label>
                           </div>
@@ -496,14 +511,14 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
                         <div className="group checkbox-container" key={limit}>
                           <input
                             type="checkbox"
-                            className="w-4 h-4 rounded group-hover:bg-primary bg-transparent border-2 border-primary focus:ring-0 focus:ring-offset-0 focus:outline-offset-0 ring-0 focus:shadow-none focus-visible:border-0 text-primary"
+                            className="w-4 h-4 rounded bg-transparent border-2 border-primary focus:ring-0 focus:ring-offset-0 focus:outline-offset-0 ring-0 focus:shadow-none focus-visible:border-0 text-primary cursor-pointer"
                             id={`teamUILimit-${limit}`}
                             onChange={(e) => handleFilterChange(
                               "teamUILimit",
                               e.target.checked ? [...filters.teamUILimit, limit] : filters.teamUILimit.filter(l => l !== limit)
                             )}
                           />
-                          <label htmlFor={`teamUILimit-${limit}`} className="ml-2">
+                          <label htmlFor={`teamUILimit-${limit}`} className="ml-2 cursor-pointer">
                             {limit}
                           </label>
                         </div>
@@ -512,17 +527,12 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
                   </div>
                 </div>
               </div>
-              <div className="">
-                <button className="w-full  bg-primary rounded-lg p-2 close lg:hidden" onClick={fetchServers}>
-                  Apply
-                </button>
-              </div>
             </div>
 
             <div className="">
               <div className="text-right flex justify-center gap-2 relative z-[1] mx-auto lg:max-w-none lg:mx-0">
                 <div className="flex-1 filter inline-block lg:hidden ">
-                  <div className="relative  text-left w-full">
+                  <div className="relative text-left w-full">
                     <div className="inline-block w-full">
                       <button
                         className="w-full bg-black-700 text-white hover:bg-gray-800 flex items-center md:justify-[unset] justify-between gap-6 px-4 py-1.5 rounded-lg"
@@ -538,7 +548,7 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
                   </div>
                 </div>
                 <div className="flex-1 sort">
-                  <div className="inline-block text-right lg:w-[258px] w-full mt-2">
+                  <div className="inline-block text-right lg:w-[258px] w-full mt-0 lg:mt-4">
                     <LangDropdown
                       data={SortContent.map(content => ({
                         ...content,
@@ -554,7 +564,6 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
                   </div>
                 </div>
               </div>
-              {/* If loading is false, show the code below*/}
               {!loading && (
                 <div className="space-y-5 mt-8">
                   {servers.map((server: Server, index: number) => {
@@ -577,7 +586,7 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
                     return (
                       <div className="server-wrapper bg-black-700/80 flex md:gap-12 gap-4 md:flex-row flex-col justify-between rounded-lg relative md:px-6 md:pe-12 hover:shadow-[5px_5px_20px_0px_#CE402A] transition duration-350 ease-in-out " key={index}>
                         <div className="flex max-sm:items-start max-md:p-6 max-md:pb-0 max-md:gap-2 md:pl-0 md:p-8">
-                          <div className="grid md:grid-cols-[100px_100px] place-content-center">
+                          <div className="grid md:grid-cols-[100px_100px] grid-cols-[auto_auto] gap-2 place-content-center">
                             <svg
                               className="h-11 w-11 max-md:h-6 max-md:w-11 fill-none stroke-primary transition duration-300 ease-in-out hover:fill-primary"
                               xmlns="http://www.w3.org/2000/svg"
@@ -585,14 +594,18 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
                             >
                               <path d="M12 .587l3.515 7.125 7.485.688-5.421 5.277 1.421 7.323-6.5-3.412-6.5 3.412 1.421-7.323-5.421-5.277 7.485-.688z" />
                             </svg>
-                            <img
-                              className="md:block hidden self-center"
-                              src={`https://flagcdn.com/36x27/${server.country_code.toLowerCase()}.png`}
-                              alt="Server Region Flag"
-                            />
+                            <div className="w-[36px] h-[27px] flex items-center justify-center overflow-hidden">
+                              <img
+                                className="w-full h-full object-cover"
+                                src={`https://flagcdn.com/36x27/${server.country_code.toLowerCase()}.png`}
+                                alt="Server Region Flag"
+                                width={36}
+                                height={27}
+                              />
+                            </div>
                           </div>
                           <div className="text-center">
-                            <p className="text-lg max-md:text-sm text-white font-extrabold  text-center break-all">
+                            <p className="text-lg max-md:text-sm text-white font-extrabold text-center break-all">
                               {server.name}
                             </p>
                             <p className="text-sm text-white text-center max-md:hidden">
@@ -613,36 +626,27 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
                             Rank:{" "}
                             <span className="text-primary">{server.rank}</span> |
                             Type:
-                            <span className="text-primary"> Modded</span> | AVG
+                            <span className="text-primary"> {server.server_type ? capitalizeFirstLetter(server.server_type) : "Unknown"}</span> | AVG
                             Players:
                             <span className="text-primary">
                               {" "}
                               {server.max_population_last_wipe}
                             </span>
                           </p>
-                          <div className="bg-primary hover:bg-primary px-2 py-4 max-md:py-1.5 text-white text-center font-medium text-xl  md:min-h-[142px] h-full font-Rammetto flex items-center justify-between flex-col max-md:gap-1.5 max-md:mb-4">
+                          <div className="bg-primary hover:bg-primary px-2 py-4 max-md:py-1.5 text-white text-center font-medium text-xl md:min-h-[142px] h-full font-Rammetto flex items-center justify-between flex-col max-md:gap-1.5 max-md:mb-4">
                             <div className="flex flex-col max-md:flex-row">
                               <span className="mr-2">WIPE IN</span>
                               <span className="text-black">{timeUntilWipe}</span>
                             </div>
 
-                            <div className="text-[11px] ">{formattedWipeDate}</div>
+                            <div className="text-[11px]">{formattedWipeDate}</div>
                           </div>
-                          <button className="bg-transparent h-full w-full md:hidden mb-4 text-white text-lg font-bold inline-block text-center">
-                            Connect
-                          </button>
                         </div>
-                        {/* TODO: Uncomment when verified servers are implemented */}
-                        {/* <img
-                        className="absolute right-2 top-2 hidden md:block"
-                        src="./images/verified.png"
-                        alt=""
-                      /> */}
                       </div>
                     );
                   })}
 
-                  {/* Pagination Controls */}
+                  {/* Desktop Pagination */}
                   <div className="flex items-center justify-center gap-1 !mt-24 max-md:hidden">
                     <button
                       onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
@@ -674,6 +678,9 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
                       </svg>
                     </button>
                   </div>
+
+                  {/* Mobile Pagination */}
+                  <MobilePagination />
                 </div>
               )}
             </div>

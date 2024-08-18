@@ -5,6 +5,7 @@ import ServerList from "../components/ServerList";
 import Image from "next/image";
 import Head from "next/head";
 import { NextUIProvider } from "@nextui-org/react";
+import Link from 'next/link';
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -40,16 +41,34 @@ export default function Home() {
         />
       </Head>
       <NextUIProvider>
-        <LanguageAndCountrySelector />
-        <Header
-          setSearchQuery={setSearchQuery}
-          serverType={serverType}
-          setServerType={setServerType}
-        />
-        <ServerList
-          searchQuery={searchQuery}
-          serverType={serverType}
-        />
+        <div className="flex flex-col min-h-screen">
+          <LanguageAndCountrySelector />
+          <Header
+            setSearchQuery={setSearchQuery}
+            serverType={serverType}
+            setServerType={setServerType}
+          />
+          <main className="flex-grow">
+            <ServerList
+              searchQuery={searchQuery}
+              serverType={serverType}
+            />
+          </main>
+          <footer className="bg-black-800 text-white py-6 mt-8 relative">
+            <div className="container mx-auto flex justify-center items-center space-x-8">
+              <Link href="/privacy-policy" className="footer-link group">
+                <span className="relative z-10 group-hover:text-primary transition duration-300">Privacy Policy</span>
+                <span className="absolute inset-0 bg-primary opacity-0 group-hover:opacity-10 rounded transition duration-300"></span>
+              </Link>
+              <div className="w-2 h-2 bg-primary transform rotate-45"></div>
+              <Link href="/terms-and-conditions" className="footer-link group">
+                <span className="relative z-10 group-hover:text-primary transition duration-300">Terms and Conditions</span>
+                <span className="absolute inset-0 bg-primary opacity-0 group-hover:opacity-10 rounded transition duration-300"></span>
+              </Link>
+            </div>
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-50"></div>
+          </footer>
+        </div>
       </NextUIProvider>
     </>
   );

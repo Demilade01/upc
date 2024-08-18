@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { Select, SelectItem, SelectProps, SelectedItems } from "@nextui-org/react";
 import Image from "next/image";
 
@@ -30,42 +30,28 @@ export default function LangDropdown({
   onChange,
 }: LangDropdownProps) {
   const defaultItem = data.find((item) => item.name === defaultValue) || data[0];
+  const [selectedValue, setSelectedValue] = useState(defaultItem.id.toString());
 
-  const renderPlaceholder = (item: DataItem) => (
-    <div className={`flex items-center ${type === "sort" ? "justify-center" : ""} gap-2`}>
-      {!placeholderIconOff && hasImage && item.img && (
-        <Image
-          className="flex-shrink-0 max-w-5 h-auto"
-          src={item.img}
-          alt={item.name}
-          height={9}
-          width={14}
-        />
-      )}
-      <p className="text-white">
-        {type === "sort" ? "Sort By" : item.name}
-      </p>
-    </div>
-  );
+  const selectedItem = useMemo(() => data.find(item => item.id.toString() === selectedValue), [data, selectedValue]);
 
   const renderValue = (items: SelectedItems<DataItem>) => {
-    return items.map((item) => (
-      <div
-        key={item.key}
-        className={`flex items-center ${type === "sort" ? "justify-center flex-row-reverse" : ""} gap-2`}
-      >
-        {hasImage && item.data?.img && (
+    const item = selectedItem;
+    if (!item) return null;
+    
+    return (
+      <div className={`flex items-center ${type === "sort" ? "justify-center flex-row-reverse" : ""} gap-2`}>
+        {hasImage && item.img && (
           <Image
             className={`flex-shrink-0 max-w-5 h-auto ${type === "sort" ? "ml-auto" : ""}`}
-            src={item.data.img}
-            alt={item.data.name}
+            src={item.img}
+            alt={item.name}
             height={9}
             width={14}
           />
         )}
-        <p className={type === "sort" ? "ml-auto" : ""}>{item?.data?.name}</p>
+        <p className={type === "sort" ? "ml-auto" : ""}>{item.name}</p>
       </div>
-    ));
+    );
   };
 
   const selectClassNames: SelectProps["classNames"] = {
@@ -82,12 +68,17 @@ export default function LangDropdown({
     value: `${valueClass} !overflow-visible !text-white !w-full`,
   };
 
+  const handleSelectionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedValue(e.target.value);
+    onChange && onChange(e.target.value);
+  };
+
   return (
     <div className="">
       <Select
         aria-label="Select option"
         items={data}
-        defaultSelectedKeys={[defaultItem.id.toString()]}
+        selectedKeys={[selectedValue]}
         className="font-medium"
         classNames={selectClassNames}
         listboxProps={{
@@ -120,11 +111,11 @@ export default function LangDropdown({
             ],
           },
         }}
-        onChange={(e) => onChange && onChange(e.target.value)}
+        onChange={handleSelectionChange}
         renderValue={renderValue}
       >
         {(item) => (
-          <SelectItem key={item.id} textValue={item.name}>
+          <SelectItem key={item.id} textValue={item.name} className={item.id.toString() === selectedValue ? 'hidden' : ''}>
             <div className={`flex gap-2 items-center justify-between`}>
               <p className={type === "sort" ? "ml-auto" : ""}>{item.name}</p>
               {hasImage && item.img && (
