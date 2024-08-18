@@ -303,7 +303,7 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
         <div className="container">
           <div className="grid lg:grid-cols-[340px_auto] grid-flow-row-dense gap-4">
             <div
-              className={`${toggleMenu ? "active" : ""} filter-sidebar lg:h-max lg:mt-[67px] relative space-y-4 max-w-[340px] flex-shrink-0 bg-black-700/80 rounded-lg p-5 text-white md:block`}
+              className={`${toggleMenu ? "active" : ""} filter-sidebar lg:h-max lg:mt-[85px] relative space-y-4 max-w-[340px] flex-shrink-0 bg-black-700/80 rounded-lg p-5 text-white md:block`}
               id="collapsible-content"
             >
               <div className="">
@@ -660,10 +660,11 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
                             <div className="text-[11px]">{formattedWipeDate}</div>
                             <button
                               onClick={() => copyToClipboard(server.address ?? server.ip)}
-                              className="mt-2 px-4 py-2 bg-black text-white font-inter font-medium rounded-lg bg-gray-800 hover:bg-gray-900 transition duration-300 ease-in-out"
+                              className="mt-2 px-4 py-2 bg-black text-white text-sm font-inter font-medium rounded-lg bg-gray-900 hover:bg-gray-800 transition duration-300 ease-in-out transform hover:scale-110 hover:shadow-xl"
                             >
                               Connect
                             </button>
+
                           </div>
                         </div>
                       </div>

@@ -19,11 +19,11 @@ const Header = ({ setSearchQuery, serverType, setServerType }: HeaderProps) => {
   };
 
   const serverTypes = [
-    { type: 'all', label: 'All', icon: null },
-    { type: 'official', label: 'Official', icon: './images/verify.png' },
-    { type: 'modded', label: 'Modded', icon: './images/modded.png' },
-    { type: 'community', label: 'Community', icon: './images/star-icon.png' },
-    { type: 'favourites', label: 'Favourites', icon: './images/star-icon.png' },
+    { type: 'all', label: 'All', iconInactive: null, iconActive: null },
+    { type: 'official', label: 'Official', iconInactive: './images/official_inactive.svg', iconActive: './images/official_active.svg' },
+    { type: 'modded', label: 'Modded', iconInactive: './images/modded_inactive.svg', iconActive: './images/modded_active.svg' },
+    { type: 'community', label: 'Community', iconInactive: './images/community_inactive.svg', iconActive: './images/community_active.svg' },
+    { type: 'favourites', label: 'Favourites', iconInactive: './images/favourites_inactive.svg', iconActive: './images/favourites_active.svg' },
   ];
 
   return (
@@ -37,7 +37,7 @@ const Header = ({ setSearchQuery, serverType, setServerType }: HeaderProps) => {
               </span>
             </Link>
 
-            <div className="flex justify-center items-center mb-6 space-x-4">
+            <div className="flex justify-center items-center mb-6 space-x-8 h-20">
               <Link href="https://discord.gg/gKR9zszb" className="cursor-pointer block hover:opacity-75 transition ease-in-out duration-300" target="_blank" rel="noopener noreferrer">
                 <img src="./images/discord.png" alt="Discord Logo" className="mx-auto" />
               </Link>
@@ -47,23 +47,8 @@ const Header = ({ setSearchQuery, serverType, setServerType }: HeaderProps) => {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <img src="./images/paypal.png" alt="PayPal Donate" className="mx-auto" style={{ width: '48px', height: '48px' }} />
+                <img src="./images/donate.png" alt="PayPal Donate" className="mx-auto" style={{ width: '80px'}} />
               </Link>
-              {/* TODO: Uncomment when notifications are implemented */}
-              {/* <Link href="/">
-                <span className="relative hover:opacity-75">
-                  <img src="./images/Union.png" alt="Notifications" />
-                  <div className="absolute top-[-10px] right-[-10px] bg-primary text-white rounded-full w-4 h-4 flex items-center justify-center text-xs">
-                    3
-                  </div>
-                </span>
-              </Link>
-
-              <Link href="/">
-                <span className="hover:opacity-75 transition ease-in-out duration-300">
-                  <img src="./images/f7.png" alt="Gift" />
-                </span>
-              </Link> */}
             </div>
 
           </div>
@@ -82,19 +67,26 @@ const Header = ({ setSearchQuery, serverType, setServerType }: HeaderProps) => {
             </div>
 
             <div className="text-white lg:flex hidden justify-between gap-[1px] overflow-x-auto md:w-full">
-              {serverTypes.map(({ type, label, icon }) => (
+              {serverTypes.map(({ type, label, iconInactive, iconActive }) => (
                 <button
                   key={type}
                   onClick={() => handleServerTypeChange(type)}
-                  className={`md:w-full flex items-center justify-center gap-2 px-4 py-3 first:rounded-s-lg last:rounded-e-lg ${serverType === type
-                    ? 'bg-primary'
-                    : type === 'favourites'
-                      ? 'bg-black-700 opacity-50 cursor-not-allowed'
-                      : 'bg-black-700 hover:bg-gray-800'
-                    }`}
+                  className={`md:w-full flex items-center justify-center gap-2 px-4 py-3 first:rounded-s-lg last:rounded-e-lg ${
+                    serverType === type
+                      ? 'bg-primary'
+                      : type === 'favourites'
+                        ? 'bg-black-700 opacity-50 cursor-not-allowed'
+                        : 'bg-black-700 hover:bg-gray-800'
+                  }`}
                   disabled={type === 'favourites'}
                 >
-                  {icon && <img src={icon} alt="Server Type Icon" className="w-5 h-5" />}
+                  {(iconInactive || iconActive) && (
+                    <img 
+                      src={serverType === type ? iconActive : iconInactive} 
+                      alt={`${label} Icon`} 
+                      className="w-5 h-5"
+                    />
+                  )}
                   <span className="font-bold text-white leading-4">{label}</span>
                 </button>
               ))}
