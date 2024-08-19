@@ -1,4 +1,4 @@
-import { useState, ChangeEvent } from 'react';
+import { ChangeEvent } from 'react';
 import Link from 'next/link';
 
 interface HeaderProps {

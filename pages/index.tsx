@@ -11,10 +11,6 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [serverType, setServerType] = useState('all');
 
-  const handleDonateClick = () => {
-    window.open("https://www.paypal.com/donate/?hosted_button_id=T9VCYTHXMG2A6", "_blank");
-  };
-
   return (
     <>
       <Head>

@@ -1,7 +1,4 @@
 import { useState, useEffect, SetStateAction } from "react";
-import Link from "next/link";
-import CustomSelect from "./Select";
-import LangDropdown from "./Select";
 import engLogo from '../public/images/eng.png'
 const country = [
   { key: "1", value: "Portugal" },

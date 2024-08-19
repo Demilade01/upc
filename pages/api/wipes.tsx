@@ -161,8 +161,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const totalServers = await serversCollection.countDocuments(filters);
 
+    const projection = {
+      next_wipe: 1,
+      country_code: 1,
+      name: 1,
+      rank: 1,
+      server_type: 1,
+      max_population_last_wipe: 1,
+      _id: 1
+    };
+
     const servers = await serversCollection
       .find(filters)
+      .project(projection)
       .sort(sortOption)
       .skip(offset)
       .limit(parseInt(limit as string))
