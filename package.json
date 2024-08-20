@@ -8,7 +8,9 @@
   "dependencies": {
     "@nextui-org/react": "^2.3.6",
     "@nextui-org/theme": "^2.2.3",
+    "@radix-ui/react-tooltip": "^1.1.2",
     "framer-motion": "^11.2.5",
+    "lucide-react": "^0.428.0",
     "mongodb": "^6.5.0",
     "next": "latest",
     "react": "^18.2.0",

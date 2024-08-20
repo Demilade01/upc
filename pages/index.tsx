@@ -2,9 +2,8 @@ import { useState } from 'react';
 import LanguageAndCountrySelector from "../components/LanguageAndCountrySelector";
 import Header from "../components/Header";
 import ServerList from "../components/ServerList";
-import Image from "next/image";
 import Head from "next/head";
-import { NextUIProvider, Button } from "@nextui-org/react";
+import { NextUIProvider } from "@nextui-org/react";
 import Link from 'next/link';
 
 export default function Home() {

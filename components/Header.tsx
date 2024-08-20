@@ -41,14 +41,6 @@ const Header = ({ setSearchQuery, serverType, setServerType }: HeaderProps) => {
               <Link href="https://discord.gg/gKR9zszb" className="cursor-pointer block hover:opacity-75 transition ease-in-out duration-300" target="_blank" rel="noopener noreferrer">
                 <img src="./images/discord.png" alt="Discord Logo" className="mx-auto" />
               </Link>
-              <Link
-                href="https://www.paypal.com/donate/?hosted_button_id=T9VCYTHXMG2A6"
-                className="cursor-pointer block hover:opacity-75 transition ease-in-out duration-300"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <img src="./images/donate.png" alt="PayPal Donate" className="mx-auto" style={{ width: '80px'}} />
-              </Link>
             </div>
 
           </div>

@@ -6,6 +6,7 @@ import sortIcon from "../public/images/sort.png";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { toast } from 'react-toastify';
+import { Trophy, Users, Server } from 'lucide-react';
 
 const SortContent = [
   { id: 1, img: sortIcon, name: "Wipe Time" },
@@ -71,7 +72,6 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
   const handleFilterToggle = () => {
     setToggleMenu(!toggleMenu);
   };
-
   const [groupLimits, setgroupLimits] = useState([]);
   const [teamUILimits, setTeamUILimits] = useState([]);
   const [regions, setRegions] = useState([]);
@@ -81,6 +81,7 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
   const [totalServers, setTotalServers] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   const handleSortChange = (value: string) => {
     const sortMap: { [key: string]: string } = {
@@ -267,6 +268,79 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
     return Array.from({ length: (endPage - startPage + 1) }, (_, i) => startPage + i);
   };
 
+  const noServerMessages = [
+    "Servers? Gone. Just like my base after that offline raid...",
+    "Servers? Gone. Like my loot after saying 'friendly' to a full metal AK guy...",
+    "Servers missing like my teammate's callouts during a raid defense...",
+    "Servers missing like my teammate's gamesense...",
+    "No servers? Not even Rust Academy could fake this footage...",
+    "No servers? Even Rust Academy couldn't script this scenario...",
+    "No servers? Enardo must've summoned a 200-man zerg to DDOS them all...",
+    "Servers gone MIA. AloneInTokyo probably solo defended against every Rust player simultaneously...",
+    "Can't find servers. Qaixxx might have wiped every single player off the face of Rust...",
+    "Servers missing. Posty probably ripped another shirt and accidentally set all Rust servers on fire...",
+    "No servers detected. They're all busy watching AloneInTokyo's latest silent raid defense...",
+    "Servers vanished. Enardo's latest trap was so effective, it caught all the servers too...",
+    "Servers gone. Posty's shirtless rampage was too much for them to handle...",
+    "Servers are gone. They might be hiding under a foundation with Memeio...",
+  ];
+
+  const [randomMessage, setRandomMessage] = useState("");
+
+  useEffect(() => {
+    // Select a random message when the component mounts
+    const randomIndex = Math.floor(Math.random() * noServerMessages.length);
+    setRandomMessage(noServerMessages[randomIndex]);
+  }, []);
+
+  const NoServersMessage = () => {
+    return (
+      <div className="flex flex-col items-center justify-center mt-8">
+        <img
+          src="./images/hazmat_running.gif"
+          alt="No servers found"
+          className="w-[300px] h-[200px] object-cover rounded-lg mb-4"
+        />
+        <p className="text-white text-xl font-semibold text-center">{randomMessage}</p>
+        <p className="text-gray-400 text-sm mt-2">Try adjusting your filters or search query!</p>
+      </div>
+    );
+  };
+
+  const DesktopPagination = () => (
+    <div className="flex items-center justify-center gap-1 !mt-24 max-md:hidden">
+      <button
+        onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+        disabled={currentPage === 1}
+        className="relative inline-flex items-center rounded-r-md px-2 py-2 text-white hover:bg-primary bg-black-700 rounded-lg focus:z-20 focus:outline-offset-0 rotate-180"
+      >
+        <span className="sr-only">Prev</span>
+        <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
+        </svg>
+      </button>
+      {generatePageNumbers().map((page) => (
+        <button
+          key={page}
+          onClick={() => setCurrentPage(page)}
+          className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold text-white ${page === currentPage ? "bg-primary" : "hover:bg-primary bg-black-700"} rounded focus:z-20 focus:outline-offset-0`}
+        >
+          {page}
+        </button>
+      ))}
+      <button
+        onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+        disabled={currentPage === totalPages}
+        className="relative inline-flex items-center rounded-r-md px-2 py-2 text-white hover:bg-primary bg-black-700 rounded focus:z-20 focus:outline-offset-0"
+      >
+        <span className="sr-only">Next</span>
+        <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
+        </svg>
+      </button>
+    </div>
+  );
+
   const MobilePagination = () => (
     <div className="flex items-center justify-center gap-2 mt-6 md:hidden">
       <button
@@ -288,6 +362,27 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
       </button>
     </div>
   );
+
+  const formatWipeDateToUserTimezone = (wipeDateString: string, timeZone: string) => {
+    const wipeDate = new Date(wipeDateString); // Parse the ISO 8601 string directly
+
+    // Check if the wipeDate is valid
+    if (isNaN(wipeDate.getTime())) {
+      return "Invalid Date";
+    }
+
+    const formattedDate = new Intl.DateTimeFormat('default', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      timeZone: timeZone, // User's timezone
+    }).format(wipeDate);
+
+    return formattedDate;
+  };
 
   return (
     <main>
@@ -583,125 +678,94 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
               </div>
               {!loading && (
                 <div className="space-y-5 mt-8">
-                  {servers.map((server: Server, index: number) => {
-                    const wipeDate = new Date(server.next_wipe);
+                  {servers.length > 0 ? (
+                    <>
+                      {servers.map((server: Server, index: number) => {
+                        const formattedWipeDate = formatWipeDateToUserTimezone(server.next_wipe, userTimeZone);
+                        const timeUntilWipe = getTimeUntilWipe(new Date(server.next_wipe)); // No need to append " UTC"
 
-                    const formattedDate = new Intl.DateTimeFormat('default', {
-                      day: '2-digit',
-                      month: '2-digit'
-                    }).format(wipeDate);
+                        return (
+                          <div className="server-wrapper bg-black-700/80 flex md:gap-12 gap-4 md:flex-row flex-col justify-between rounded-lg relative md:px-6 md:pe-12 hover:shadow-[5px_5px_20px_0px_#CE402A] transition duration-350 ease-in-out " key={index}>
+                            <div className="flex max-sm:items-start max-md:p-6 max-md:pb-0 max-md:gap-2 md:pl-0 md:p-8">
+                              <div className="grid md:grid-cols-[100px_100px] grid-cols-[auto_auto] gap-2 place-content-center">
+                                <svg
+                                  className="h-11 w-11 max-md:h-6 max-md:w-11 fill-none stroke-primary transition duration-300 ease-in-out hover:fill-primary"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path d="M12 .587l3.515 7.125 7.485.688-5.421 5.277 1.421 7.323-6.5-3.412-6.5 3.412 1.421-7.323-5.421-5.277 7.485-.688z" />
+                                </svg>
+                                <div className="w-[36px] h-[27px] flex items-center justify-center overflow-hidden">
+                                  <img
+                                    className="w-full h-full object-cover"
+                                    src={`https://flagcdn.com/36x27/${server.country_code.toLowerCase()}.png`}
+                                    alt="Server Region Flag"
+                                    width={36}
+                                    height={27}
+                                  />
+                                </div>
+                              </div>
+                              <div className="flex flex-col justify-center items-center text-center">
+                                <p className="text-lg max-md:text-sm text-white font-extrabold text-center break-all mb-2">
+                                  {server.name}
+                                </p>
+                                <div className="flex flex-wrap justify-center gap-2 text-xs max-md:hidden">
+                                  <div className="flex items-center bg-black-800 rounded-full px-3 py-1">
+                                    <Trophy size={14} className="text-primary mr-1" />
+                                    <span className="text-white">{server.rank}</span>
+                                  </div>
+                                  <div className="flex items-center bg-black-800 rounded-full px-3 py-1">
+                                    <Server size={14} className="text-primary mr-1" />
+                                    <span className="text-white">{capitalizeFirstLetter(server.server_type)}</span>
+                                  </div>
+                                  <div className="flex items-center bg-black-800 rounded-full px-3 py-1" title="Average population on last wipe day">
+                                    <Users size={14} className="text-primary mr-1" />
+                                    <span className="text-white">AVG Population: <span className="text-primary font-bold">{server.max_population_last_wipe}</span></span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="max-md:w-full flex-shrink-0">
+                              <div className="flex flex-wrap justify-center gap-2 text-xs mb-2 md:hidden">
+                                <div className="flex items-center bg-black-800 rounded-full px-3 py-1">
+                                  <Trophy size={14} className="text-primary mr-1" />
+                                  <span className="text-white">{server.rank}</span>
+                                </div>
+                                <div className="flex items-center bg-black-800 rounded-full px-3 py-1">
+                                  <Server size={14} className="text-primary mr-1" />
+                                  <span className="text-white">{capitalizeFirstLetter(server.server_type)}</span>
+                                </div>
+                                <div className="flex items-center bg-black-800 rounded-full px-3 py-1" title="Average population on last wipe day">
+                                  <Users size={14} className="text-primary mr-1" />
+                                  <span className="text-white">AVG Population: <span className="text-primary font-bold">{server.max_population_last_wipe}</span></span>
+                                </div>
+                              </div>
+                              <div className="bg-primary hover:bg-primary px-2 py-4 max-md:py-1.5 text-white text-center font-medium text-xl md:min-h-[142px] h-full font-Rammetto flex items-center justify-between flex-col max-md:gap-1.5 max-md:mb-4">
+                                <div className="flex flex-col max-md:flex-row">
+                                  <span className="mr-2">WIPE IN</span>
+                                  <span className="text-black">{timeUntilWipe}</span>
+                                </div>
 
-                    const formattedTime = new Intl.DateTimeFormat('default', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      hour12: false
-                    }).format(wipeDate);
+                                <div className="text-[11px]">{formattedWipeDate}</div>
+                                <button
+                                  onClick={() => copyToClipboard(server.address ?? server.ip)}
+                                  className="mt-2 px-4 py-2 bg-black text-white text-sm font-inter font-medium rounded-lg bg-gray-900 hover:bg-gray-800 transition duration-300 ease-in-out transform hover:scale-110 hover:shadow-xl"
+                                >
+                                  Connect
+                                </button>
 
-                    const formattedWipeDate = `${formattedDate} ${formattedTime}`;
-                    const timeUntilWipe = getTimeUntilWipe(wipeDate);
-
-                    return (
-                      <div className="server-wrapper bg-black-700/80 flex md:gap-12 gap-4 md:flex-row flex-col justify-between rounded-lg relative md:px-6 md:pe-12 hover:shadow-[5px_5px_20px_0px_#CE402A] transition duration-350 ease-in-out " key={index}>
-                        <div className="flex max-sm:items-start max-md:p-6 max-md:pb-0 max-md:gap-2 md:pl-0 md:p-8">
-                          <div className="grid md:grid-cols-[100px_100px] grid-cols-[auto_auto] gap-2 place-content-center">
-                            <svg
-                              className="h-11 w-11 max-md:h-6 max-md:w-11 fill-none stroke-primary transition duration-300 ease-in-out hover:fill-primary"
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 24 24"
-                            >
-                              <path d="M12 .587l3.515 7.125 7.485.688-5.421 5.277 1.421 7.323-6.5-3.412-6.5 3.412 1.421-7.323-5.421-5.277 7.485-.688z" />
-                            </svg>
-                            <div className="w-[36px] h-[27px] flex items-center justify-center overflow-hidden">
-                              <img
-                                className="w-full h-full object-cover"
-                                src={`https://flagcdn.com/36x27/${server.country_code.toLowerCase()}.png`}
-                                alt="Server Region Flag"
-                                width={36}
-                                height={27}
-                              />
+                              </div>
                             </div>
                           </div>
-                          <div className="flex flex-col justify-center items-center text-center">
-                            <p className="text-lg max-md:text-sm text-white font-extrabold text-center break-all">
-                              {server.name}
-                            </p>
-                            <p className="text-sm text-white text-center max-md:hidden">
-                              Rank:{" "}
-                              <span className="text-primary">{server.rank}</span> |
-                              Type:
-                              <span className="text-primary"> {server.server_type ? capitalizeFirstLetter(server.server_type) : "Unknown"}</span> | AVG
-                              Players:
-                              <span className="text-primary">
-                                {" "}
-                                {server.max_population_last_wipe}
-                              </span>
-                            </p>
-                          </div>
-                        </div>
-                        <div className="max-md:w-full flex-shrink-0">
-                          <p className="text-sm text-white text-center md:hidden mb-2">
-                            Rank:{" "}
-                            <span className="text-primary">{server.rank}</span> |
-                            Type:
-                            <span className="text-primary"> {server.server_type ? capitalizeFirstLetter(server.server_type) : "Unknown"}</span> | AVG
-                            Players:
-                            <span className="text-primary">
-                              {" "}
-                              {server.max_population_last_wipe}
-                            </span>
-                          </p>
-                          <div className="bg-primary hover:bg-primary px-2 py-4 max-md:py-1.5 text-white text-center font-medium text-xl md:min-h-[142px] h-full font-Rammetto flex items-center justify-between flex-col max-md:gap-1.5 max-md:mb-4">
-                            <div className="flex flex-col max-md:flex-row">
-                              <span className="mr-2">WIPE IN</span>
-                              <span className="text-black">{timeUntilWipe}</span>
-                            </div>
+                        );
+                      })}
 
-                            <div className="text-[11px]">{formattedWipeDate}</div>
-                            <button
-                              onClick={() => copyToClipboard(server.address ?? server.ip)}
-                              className="mt-2 px-4 py-2 bg-black text-white text-sm font-inter font-medium rounded-lg bg-gray-900 hover:bg-gray-800 transition duration-300 ease-in-out transform hover:scale-110 hover:shadow-xl"
-                            >
-                              Connect
-                            </button>
-
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-
-                  {/* Desktop Pagination */}
-                  <div className="flex items-center justify-center gap-1 !mt-24 max-md:hidden">
-                    <button
-                      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                      disabled={currentPage === 1}
-                      className="relative inline-flex items-center rounded-r-md px-2 py-2 text-white hover:bg-primary bg-black-700 rounded-lg focus:z-20 focus:outline-offset-0 rotate-180"
-                    >
-                      <span className="sr-only">Prev</span>
-                      <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                        <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
-                      </svg>
-                    </button>
-                    {generatePageNumbers().map((page) => (
-                      <button
-                        key={page}
-                        onClick={() => setCurrentPage(page)}
-                        className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold text-white ${page === currentPage ? "bg-primary" : "hover:bg-primary bg-black-700"} rounded focus:z-20 focus:outline-offset-0`}
-                      >
-                        {page}
-                      </button>
-                    ))}
-                    <button
-                      onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                      disabled={currentPage === totalPages}
-                      className="relative inline-flex items-center rounded-r-md px-2 py-2 text-white hover:bg-primary bg-black-700 rounded focus:z-20 focus:outline-offset-0"
-                    >
-                      <span className="sr-only">Next</span>
-                      <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                        <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
-                      </svg>
-                    </button>
-                  </div>
+                      <DesktopPagination />
+                      <MobilePagination />
+                    </>
+                  ) : (
+                    <NoServersMessage />
+                  )}
                   <ToastContainer
                     position="top-right"
                     autoClose={3000}
@@ -713,8 +777,7 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
                     draggable
                     pauseOnHover
                   />
-                  {/* Mobile Pagination */}
-                  <MobilePagination />
+
                 </div>
               )}
             </div>

@@ -11,7 +11,7 @@ module.exports = {
   theme: {
     extend: {
       backgroundImage: {
-        mainBg: "url('../public/images/main-bg.png')",
+        mainBg: "url('../public/images/main-bg.jpg')",
       },
       fontFamily: {
         Rammetto: "'Rammetto One', sans-serif",
