@@ -98,19 +98,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   }
 
-  if (regions && typeof regions === 'string') {
-    filters.region = { $in: regions.split(',') };
+  if (regions) {
+    const selectedRegions = Array.isArray(regions) ? regions : regions.split(',');
+    if (selectedRegions.length > 0) {
+      filters.region = { $in: selectedRegions };
+    }
   }
 
-  if (groupLimit && typeof groupLimit === 'string') {
-    const groupLimitValues = groupLimit.split(',');
-    const numericLimits = groupLimitValues.filter(value => !isNaN(Number(value))).map(Number);
+  if (groupLimit) {
+    const groupLimitValues = Array.isArray(groupLimit) ? groupLimit : [groupLimit];
+    const numericLimits = groupLimitValues
+      .map(value => parseInt(value, 10))
+      .filter(value => !isNaN(value));
     const noLimit = groupLimitValues.includes('No limit');
-
+  
     if (numericLimits.length) {
       filters.group_limit = { $in: numericLimits };
     }
-
+  
     if (noLimit) {
       filters.$or = [
         { group_limit: { $lt: 1 } },
@@ -119,12 +124,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   }
 
-  if (teamUILimit && typeof teamUILimit === 'string') {
-    const teamUILimitValues = teamUILimit.split(',');
-    const numericLimits = teamUILimitValues.filter(value => !isNaN(Number(value))).map(Number);
+  if (teamUILimit) {
+    const teamUILimitValues = Array.isArray(teamUILimit) ? teamUILimit : [teamUILimit];
+    const numericLimits = teamUILimitValues
+      .map(value => parseInt(value, 10))
+      .filter(value => !isNaN(value));
     const noLimit = teamUILimitValues.includes('No limit');
 
     filters.$and = filters.$and || [];
+
     if (numericLimits.length) {
       filters.$and.push({ team_ui_limit: { $in: numericLimits } });
     }
@@ -168,6 +176,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       rank: 1,
       server_type: 1,
       max_population_last_wipe: 1,
+      ip: 1,
+      address: 1,
       _id: 1
     };
 

@@ -5,6 +5,7 @@ import ServerList from "../components/ServerList";
 import Head from "next/head";
 import { NextUIProvider } from "@nextui-org/react";
 import Link from 'next/link';
+import GoogleTagManager from '../components/GoogleTagManager';
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -20,16 +21,6 @@ export default function Home() {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
         <link rel="icon" href="images/favicon.ico" />
 
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-VM1G4M6SV5"></script>
-        <script dangerouslySetInnerHTML={{
-          __html: `
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-VM1G4M6SV5');
-          `
-        }} />
-
         <link
           href="https://fonts.googleapis.com/css2?family=Rammetto+One&display=swap"
           rel="stylesheet"
@@ -39,6 +30,9 @@ export default function Home() {
           rel="stylesheet"
         />
       </Head>
+
+      <GoogleTagManager />
+
       <NextUIProvider>
         <div className="flex flex-col min-h-screen">
           <LanguageAndCountrySelector />
@@ -72,7 +66,7 @@ export default function Home() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <img src="./images/donate.png" alt="PayPal Donate" className="mx-auto mt-2" style={{ width: '80px'}} />
+                <img src="./images/donate.svg" alt="PayPal Donate" className="mx-auto mt-2" style={{ width: '80px'}} />
               </Link>
               </div>
               <div className="text-sm text-gray-400">

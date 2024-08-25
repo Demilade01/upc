@@ -33,13 +33,13 @@ const Header = ({ setSearchQuery, serverType, setServerType }: HeaderProps) => {
           <div className="space-y-10 max-lg:space-y-8 gap-6 w-full max-w-[193px] mx-auto">
             <Link href="/">
               <span>
-                <img src="./images/logo.png" alt="Upcoming Wipes Logo" className="mx-auto" />
+                <img src="./images/logo.svg" alt="Upcoming Wipes Logo" className="mx-auto" />
               </span>
             </Link>
 
             <div className="flex justify-center items-center mb-6 space-x-8 h-20">
               <Link href="https://discord.gg/gKR9zszb" className="cursor-pointer block hover:opacity-75 transition ease-in-out duration-300" target="_blank" rel="noopener noreferrer">
-                <img src="./images/discord.png" alt="Discord Logo" className="mx-auto" />
+                <img src="./images/discord.svg" alt="Discord Logo" className="mx-auto w-8 h-6" />
               </Link>
             </div>
 
@@ -54,7 +54,7 @@ const Header = ({ setSearchQuery, serverType, setServerType }: HeaderProps) => {
                 onChange={handleSearchChange}
               />
               <div className="absolute top-[50%] translate-y-[-50%] left-4">
-                <img src="./images/search-icon.png" alt="" />
+                <img src="./images/search-icon.svg" className='h-5 w-5' alt="" />
               </div>
             </div>
 

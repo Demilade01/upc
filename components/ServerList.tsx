@@ -14,6 +14,24 @@ const SortContent = [
   { id: 3, img: sortIcon, name: "AVG Players" },
 ];
 
+const regions = [
+  "Africa",
+  "Asia",
+  "Europe",
+  "Middle East",
+  "North America",
+  "Oceania",
+  "South America"
+];
+
+const groupLimits = [
+  "1", "2", "3", "4", "5", "6", "7", "8", "10", "12", "No limit"
+];
+
+const teamUILimits = [
+  "1", "2", "3", "4", "5", "6", "7", "8", "10", "12", "No limit"
+];
+
 const capitalizeFirstLetter = (string: string) => {
   return string.charAt(0).toUpperCase() + string.slice(1);
 };
@@ -72,9 +90,6 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
   const handleFilterToggle = () => {
     setToggleMenu(!toggleMenu);
   };
-  const [groupLimits, setgroupLimits] = useState([]);
-  const [teamUILimits, setTeamUILimits] = useState([]);
-  const [regions, setRegions] = useState([]);
   const [servers, setServers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sortOption, setSortOption] = useState("wipe_time");
@@ -195,54 +210,9 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
     }
   };
 
-  const fetchRegions = async () => {
-    try {
-      const response = await fetch('/api/regions');
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      const data = await response.json();
-      setRegions(data.data);
-    } catch (error) {
-      console.error('Failed to fetch regions:', error);
-    }
-  };
-
-  const fetchGroupLimits = async () => {
-    try {
-      const response = await fetch('/api/group_limits');
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      const data = await response.json();
-      setgroupLimits(data.data);
-    } catch (error) {
-      console.error('Failed to fetch team limits:', error);
-    }
-  };
-
-  const fetchTeamUILimits = async () => {
-    try {
-      const response = await fetch('/api/team_ui_limits');
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      const data = await response.json();
-      setTeamUILimits(data.data);
-    } catch (error) {
-      console.error('Failed to fetch team UI limits:', error);
-    }
-  };
-
   useEffect(() => {
     fetchServers();
   }, [filters, searchQuery, sortOption, serverType, currentPage]);
-
-  useEffect(() => {
-    fetchRegions();
-    fetchGroupLimits();
-    fetchTeamUILimits();
-  }, []);
 
   const totalPages = Math.ceil(totalServers / itemsPerPage);
 
