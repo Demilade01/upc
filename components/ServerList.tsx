@@ -218,7 +218,18 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
   const fetchServers = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/wipes?${new URLSearchParams(router.query as Record<string, string>)}`);
+      const queryParams = new URLSearchParams(router.query as Record<string, string>);
+      
+      // Add searchQuery to the queryParams if it exists
+      if (searchQuery) {
+        queryParams.set('searchQuery', searchQuery);
+      }
+
+      if (serverType) {
+        queryParams.set('serverType', serverType);
+      }
+      
+      const response = await fetch(`/api/wipes?${queryParams.toString()}`);
       if (!response.ok) throw new Error('Network response was not ok');
       const data = await response.json();
       setServers(data.data);
@@ -228,7 +239,7 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
     } finally {
       setLoading(false);
     }
-  }, [router.query]);
+  }, [router.query, searchQuery]);
 
   useEffect(() => {
     fetchServers();
