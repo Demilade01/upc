@@ -7,6 +7,8 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Trophy, Users, Server } from 'lucide-react';
 import { StaticImageData } from 'next/image';
+import { useRouter } from 'next/router';
+import Link from 'next/link';
 
 interface SortContentItem {
   id: number;
@@ -90,6 +92,7 @@ interface SliderState {
 }
 
 const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
+  const router = useRouter();
   const [toggleMenu, setToggleMenu] = useState<boolean>(false);
   const [servers, setServers] = useState<Server[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -150,40 +153,72 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
     step: 1000
   });
 
+  const updateUrlAndFetch = useCallback((newPage: number, newFilters: Filters, newSortOption: string) => {
+    const query: { [key: string]: string | string[] } = {
+      page: newPage.toString(),
+      sort: newSortOption,
+    };
+
+    Object.entries(newFilters).forEach(([key, value]) => {
+      if (Array.isArray(value) && value.length > 0) {
+        query[key] = value.map(String);
+      } else if (value !== null && value !== undefined) {
+        query[key] = String(value);
+      }
+    });
+
+    // Remove the 'rank' query parameter if it's set to the default value
+    if (newFilters.rank?.[0] === 0 && newFilters.rank?.[1] === 1000) {
+      delete query.rank;
+    }
+
+    // Add searchQuery and serverType if they're set
+    if (searchQuery) query.searchQuery = searchQuery;
+    if (serverType && serverType !== 'all') query.serverType = serverType;
+
+    router.push({ pathname: router.pathname, query }, undefined, { shallow: true });
+  }, [router, searchQuery, serverType]);
+
+  useEffect(() => {
+    const page = Number(router.query.page) || 1;
+    setCurrentPage(page);
+  }, [router.query.page]);
+
   const itemsPerPage: number = 10;
   const userTimeZone: string = useMemo(() => Intl.DateTimeFormat().resolvedOptions().timeZone, []);
 
   const handleSortChange = useCallback((value: string) => {
     const sortMap: { [key: string]: string } = { "1": "wipe_time", "2": "rank", "3": "avg_players" };
-    setSortOption(sortMap[value] || "wipe_time");
-    setCurrentPage(1);
-  }, []);
+    const newSortOption = sortMap[value] || "wipe_time";
+    setSortOption(newSortOption);
+    updateUrlAndFetch(1, filters, newSortOption);
+  }, [filters, updateUrlAndFetch]);
 
   const handleFilterChange = useCallback((filterName: keyof Filters, value: any) => {
-    setFilters(prevFilters => ({ ...prevFilters, [filterName]: value }));
-    setCurrentPage(1);
-  }, []);
+    setFilters(prevFilters => {
+      const newFilters = { ...prevFilters };
+      
+      if (Array.isArray(value)) {
+        if (value.length === 0) {
+          delete newFilters[filterName];
+        } else {
+          newFilters[filterName] = value;
+        }
+      } else if (value === null || value === undefined) {
+        delete newFilters[filterName];
+      } else {
+        newFilters[filterName] = value;
+      }
+      
+      updateUrlAndFetch(1, newFilters, sortOption);
+      return newFilters;
+    });
+  }, [sortOption, updateUrlAndFetch]);
 
   const fetchServers = useCallback(async () => {
     setLoading(true);
     try {
-      const queryParams = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: itemsPerPage.toString(),
-        sort: sortOption,
-        ...(searchQuery && { searchQuery }),
-        ...(serverType && serverType !== 'all' && { serverType }),
-      });
-
-      Object.entries(filters).forEach(([key, value]) => {
-        if (Array.isArray(value) && value.length > 0) {
-          value.forEach(item => queryParams.append(key, item.toString()));
-        } else if (value != null) {
-          queryParams.append(key, value.toString());
-        }
-      });
-
-      const response = await fetch(`/api/wipes?${queryParams}`);
+      const response = await fetch(`/api/wipes?${new URLSearchParams(router.query as Record<string, string>)}`);
       if (!response.ok) throw new Error('Network response was not ok');
       const data = await response.json();
       setServers(data.data);
@@ -193,7 +228,7 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, filters, searchQuery, serverType, sortOption]);
+  }, [router.query]);
 
   useEffect(() => {
     fetchServers();
@@ -201,29 +236,41 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
 
   useEffect(() => {
     setCurrentPage(1);
+    router.push({ pathname: router.pathname, query: { ...router.query, page: 1 } }, undefined, { shallow: true });
   }, [serverType, searchQuery]);
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    router.push({ pathname: router.pathname, query: { ...router.query, page: newPage } }, undefined, { shallow: true });
+  };
 
   const renderCheckboxGroup = useCallback((items: string[], filterName: keyof Filters) => (
     <div className="flex flex-col space-y-1 pl-1">
-      {items.map((item) => (
-        <div className="group checkbox-container" key={item}>
-          <input
-            type="checkbox"
-            id={`${filterName}-${item}`}
-            className="w-4 h-4 rounded bg-transparent border-2 border-primary focus:ring-0 focus:ring-offset-0 focus:outline-offset-0 ring-0 focus:shadow-none focus-visible:border-0 text-primary cursor-pointer"
-            onChange={(e) => handleFilterChange(
-              filterName,
-              e.target.checked
-                ? [...filters[filterName], item]
-                : (filters[filterName] as string[]).filter((i: string) => i !== item)
-            )}
-            aria-label={`Filter by ${filterName}: ${item}`}
-          />
-          <label htmlFor={`${filterName}-${item}`} className="ml-2 cursor-pointer">
-            {item}
-          </label>
-        </div>
-      ))}
+      {items.map((item) => {
+        const currentFilter = filters[filterName] as (string | number)[] || [];
+        const isChecked = currentFilter.includes(item);
+        
+        return (
+          <div className="group checkbox-container" key={item}>
+            <input
+              type="checkbox"
+              id={`${filterName}-${item}`}
+              className="w-4 h-4 rounded bg-transparent border-2 border-primary focus:ring-0 focus:ring-offset-0 focus:outline-offset-0 ring-0 focus:shadow-none focus-visible:border-0 text-primary cursor-pointer"
+              checked={isChecked}
+              onChange={(e) => {
+                const updatedFilter = e.target.checked
+                  ? [...currentFilter, item]
+                  : currentFilter.filter((i) => i !== item);
+                handleFilterChange(filterName, updatedFilter);
+              }}
+              aria-label={`Filter by ${filterName}: ${item}`}
+            />
+            <label htmlFor={`${filterName}-${item}`} className="ml-2 cursor-pointer">
+              {item}
+            </label>
+          </div>
+        );
+      })}
     </div>
   ), [filters, handleFilterChange]);
 
@@ -559,8 +606,16 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
                   {servers.length > 0 ? (
                     <>
                       {renderServers()}
-                      <DesktopPagination currentPage={currentPage} totalPages={Math.ceil(totalServers / itemsPerPage)} setCurrentPage={setCurrentPage} />
-                      <MobilePagination currentPage={currentPage} totalPages={Math.ceil(totalServers / itemsPerPage)} setCurrentPage={setCurrentPage} />
+                      <DesktopPagination
+                        currentPage={currentPage}
+                        totalPages={Math.ceil(totalServers / itemsPerPage)}
+                        baseUrl=""
+                      />
+                      <MobilePagination
+                        currentPage={currentPage}
+                        totalPages={Math.ceil(totalServers / itemsPerPage)}
+                        baseUrl=""
+                      />
                     </>
                   ) : (
                     <NoServersMessage />
@@ -589,10 +644,12 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
 interface PaginationProps {
   currentPage: number;
   totalPages: number;
-  setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
+  baseUrl: string;
 }
 
-const DesktopPagination: React.FC<PaginationProps> = ({ currentPage, totalPages, setCurrentPage }) => {
+export const DesktopPagination: React.FC<PaginationProps> = ({ currentPage, totalPages, baseUrl }) => {
+  const router = useRouter();
+
   const generatePageNumbers = () => {
     let startPage: number, endPage: number;
 
@@ -615,67 +672,78 @@ const DesktopPagination: React.FC<PaginationProps> = ({ currentPage, totalPages,
     return Array.from({ length: (endPage - startPage + 1) }, (_, i) => startPage + i);
   };
 
+  const createPageUrl = (page: number) => {
+    const query = { ...router.query, page: page.toString() };
+    return { pathname: baseUrl, query };
+  };
+
   return (
-    <div className="flex items-center justify-center gap-1 !mt-24 max-md:hidden">
-      <button
-        onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-        disabled={currentPage === 1}
+    <nav className="flex items-center justify-center gap-1 !mt-24 max-md:hidden" aria-label="Pagination">
+      <Link
+        href={createPageUrl(Math.max(currentPage - 1, 1))}
         aria-label="Previous page"
-        className="relative inline-flex items-center rounded-r-md px-2 py-2 text-white hover:bg-primary bg-black-700 rounded-lg focus:z-20 focus:outline-offset-0 rotate-180"
+        className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-white hover:bg-primary bg-black-700 rounded-lg focus:z-20 focus:outline-offset-0 rotate-180 ${currentPage === 1 ? 'pointer-events-none opacity-50' : ''}`}
       >
-        <span className="sr-only">Prev</span>
+        <span className="sr-only">Previous</span>
         <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
           <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
         </svg>
-      </button>
+      </Link>
       {generatePageNumbers().map((page) => (
-        <button
+        <Link
           key={page}
-          onClick={() => setCurrentPage(page)}
+          href={createPageUrl(page)}
           aria-label={`Go to page ${page}`}
+          aria-current={page === currentPage ? "page" : undefined}
           className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold text-white ${page === currentPage ? "bg-primary" : "hover:bg-primary bg-black-700"} rounded focus:z-20 focus:outline-offset-0`}
         >
           {page}
-        </button>
+        </Link>
       ))}
-      <button
-        onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-        disabled={currentPage === totalPages}
+      <Link
+        href={createPageUrl(Math.min(currentPage + 1, totalPages))}
         aria-label="Next page"
-        className="relative inline-flex items-center rounded-r-md px-2 py-2 text-white hover:bg-primary bg-black-700 rounded focus:z-20 focus:outline-offset-0"
+        className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-white hover:bg-primary bg-black-700 rounded focus:z-20 focus:outline-offset-0 ${currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}`}
       >
         <span className="sr-only">Next</span>
         <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
           <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
         </svg>
-      </button>
-    </div>
+      </Link>
+    </nav>
   );
 };
 
-const MobilePagination: React.FC<PaginationProps> = ({ currentPage, totalPages, setCurrentPage }) => (
-  <div className="flex items-center justify-center gap-2 mt-6 md:hidden">
-    <button
-      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-      disabled={currentPage === 1}
-      aria-label="Previous page"
-      className="px-3 py-1 text-white bg-black-700 rounded-lg hover:bg-primary disabled:opacity-50"
-    >
-      Prev
-    </button>
-    <span className="text-white">
-      Page {currentPage} of {totalPages}
-    </span>
-    <button
-      onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-      disabled={currentPage === totalPages}
-      aria-label="Next page"
-      className="px-3 py-1 text-white bg-black-700 rounded-lg hover:bg-primary disabled:opacity-50"
-    >
-      Next
-    </button>
-  </div>
-);
+export const MobilePagination: React.FC<PaginationProps> = ({ currentPage, totalPages, baseUrl }) => {
+  const router = useRouter();
+
+  const createPageUrl = (page: number) => {
+    const query = { ...router.query, page: page.toString() };
+    return { pathname: baseUrl, query };
+  };
+
+  return (
+    <nav className="flex items-center justify-center gap-2 mt-6 md:hidden" aria-label="Pagination">
+      <Link
+        href={createPageUrl(Math.max(currentPage - 1, 1))}
+        aria-label="Previous page"
+        className={`px-3 py-1 text-white bg-black-700 rounded-lg hover:bg-primary ${currentPage === 1 ? 'pointer-events-none opacity-50' : ''}`}
+      >
+        Prev
+      </Link>
+      <span className="text-white">
+        Page {currentPage} of {totalPages}
+      </span>
+      <Link
+        href={createPageUrl(Math.min(currentPage + 1, totalPages))}
+        aria-label="Next page"
+        className={`px-3 py-1 text-white bg-black-700 rounded-lg hover:bg-primary ${currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}`}
+      >
+        Next
+      </Link>
+    </nav>
+  );
+};
 
 const NoServersMessage: React.FC = () => {
   const noServerMessages: string[] = [
@@ -705,7 +773,7 @@ const NoServersMessage: React.FC = () => {
       <img
         src="./images/hazmat_running.gif"
         alt="No servers found"
-        className="w-[300px] h-[200px] object-cover rounded-lg mb-4"
+        className="h-[200px] object-cover rounded-lg mb-4"
       />
       <p className="text-white text-xl font-semibold text-center">{randomMessage}</p>
       <p className="text-gray-400 text-sm mt-2">Try adjusting your filters or search query!</p>

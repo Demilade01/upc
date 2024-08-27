@@ -6,6 +6,7 @@ import Head from "next/head";
 import { NextUIProvider } from "@nextui-org/react";
 import Link from 'next/link';
 import GoogleTagManager from '../components/GoogleTagManager';
+import { useRouter } from 'next/router';
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -52,13 +53,13 @@ export default function Home() {
                 </Link>
                 <div className="w-2 h-2 bg-primary transform rotate-45"></div>
                 <Link
-                href="https://www.paypal.com/donate/?hosted_button_id=T9VCYTHXMG2A6"
-                className="cursor-pointer block hover:opacity-75 transition ease-in-out duration-300"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <img src="./images/donate.svg" alt="PayPal Donate" className="mx-auto mt-2" style={{ width: '80px'}} />
-              </Link>
+                  href="https://www.paypal.com/donate/?hosted_button_id=T9VCYTHXMG2A6"
+                  className="cursor-pointer block hover:opacity-75 transition ease-in-out duration-300"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <img src="./images/donate.svg" alt="PayPal Donate" className="mx-auto mt-2" style={{ width: '80px' }} />
+                </Link>
               </div>
               <div className="text-sm text-gray-400">
                 © 2024 UPC. All rights reserved.

@@ -32,7 +32,9 @@ interface Filters {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { page = '1', limit = '10', maximumPopulation, nextWipe, mapSize, regions, groupLimit, teamUILimit, sort, serverType, rank, searchQuery } = req.query;
-  const offset = (parseInt(page as string) - 1) * parseInt(limit as string);
+  const currentPage = Math.max(1, parseInt(page as string));
+  const itemsPerPage = parseInt(limit as string);
+  const offset = (currentPage - 1) * itemsPerPage;
 
   const filters: Filters = {
     next_wipe: { $gt: new Date() },
@@ -80,7 +82,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (nextWipe && typeof nextWipe === 'string') {
     const [minWipe, maxWipe] = nextWipe.split(',').map(Number);
-    filters.next_wipe = { 
+    filters.next_wipe = {
       $gte: Date.now() + minWipe * 60 * 1000,
       $lte: Date.now() + maxWipe * 60 * 1000
     };
@@ -111,11 +113,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .map(value => parseInt(value, 10))
       .filter(value => !isNaN(value));
     const noLimit = groupLimitValues.includes('No limit');
-  
+
     if (numericLimits.length) {
       filters.group_limit = { $in: numericLimits };
     }
-  
+
     if (noLimit) {
       filters.$or = [
         { group_limit: { $lt: 1 } },
@@ -186,10 +188,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .project(projection)
       .sort(sortOption)
       .skip(offset)
-      .limit(parseInt(limit as string))
+      .limit(itemsPerPage)
       .toArray();
 
-    return res.status(200).json({ status: "success", data: servers, total: totalServers });
+    return res.status(200).json({
+      status: "success",
+      data: servers,
+      total: totalServers,
+      currentPage: currentPage,
+      totalPages: Math.ceil(totalServers / itemsPerPage)
+    });
   } catch (e) {
     console.error(e);
     return res.status(500).json({ status: "error", message: (e as Error).message });
