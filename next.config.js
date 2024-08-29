@@ -18,6 +18,9 @@ const nextConfig = {
       },
     ],
   },
+  images: {
+    domains: ['flagcdn.com'],
+  },
   experimental: {
     optimizeCss: true,
   },

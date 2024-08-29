@@ -180,7 +180,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       max_population_last_wipe: 1,
       ip: 1,
       address: 1,
-      _id: 1
+      server_steam_id: 1
     };
 
     const servers = await serversCollection

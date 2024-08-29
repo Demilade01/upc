@@ -66,6 +66,7 @@ interface Server {
   country_code: string;
   address: string;
   ip: string;
+  server_steam_id: string;
 }
 
 interface ServerListProps {
@@ -153,37 +154,6 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
     step: 1000
   });
 
-  const updateUrlAndFetch = useCallback((newPage: number, newFilters: Filters, newSortOption: string) => {
-    const query: { [key: string]: string | string[] } = {
-      page: newPage.toString(),
-      sort: newSortOption,
-    };
-
-    Object.entries(newFilters).forEach(([key, value]) => {
-      if (Array.isArray(value) && value.length > 0) {
-        query[key] = value.map(String);
-      } else if (value !== null && value !== undefined) {
-        query[key] = String(value);
-      }
-    });
-
-    // Remove the 'rank' query parameter if it's set to the default value
-    if (newFilters.rank?.[0] === 0 && newFilters.rank?.[1] === 1000) {
-      delete query.rank;
-    }
-
-    // Add searchQuery and serverType if they're set
-    if (searchQuery) query.searchQuery = searchQuery;
-    if (serverType && serverType !== 'all') query.serverType = serverType;
-
-    router.push({ pathname: router.pathname, query }, undefined, { shallow: true });
-  }, [router, searchQuery, serverType]);
-
-  useEffect(() => {
-    const page = Number(router.query.page) || 1;
-    setCurrentPage(page);
-  }, [router.query.page]);
-
   const itemsPerPage: number = 10;
   const userTimeZone: string = useMemo(() => Intl.DateTimeFormat().resolvedOptions().timeZone, []);
 
@@ -191,8 +161,7 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
     const sortMap: { [key: string]: string } = { "1": "wipe_time", "2": "rank", "3": "avg_players" };
     const newSortOption = sortMap[value] || "wipe_time";
     setSortOption(newSortOption);
-    updateUrlAndFetch(1, filters, newSortOption);
-  }, [filters, updateUrlAndFetch]);
+  }, []);
 
   const handleFilterChange = useCallback((filterName: keyof Filters, value: any) => {
     setFilters(prevFilters => {
@@ -210,23 +179,54 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
         newFilters[filterName] = value;
       }
       
-      updateUrlAndFetch(1, newFilters, sortOption);
       return newFilters;
     });
-  }, [sortOption, updateUrlAndFetch]);
+
+    // Reset page to 1 when a filter changes
+    router.push({ pathname: router.pathname, query: { ...router.query, page: '1' } }, undefined, { shallow: true });
+  }, [router]);
+
+  const validateAndSetPage = useCallback((pageQuery: string | string[] | undefined) => {
+    let page = 1;
+    if (typeof pageQuery === 'string') {
+      const parsedPage = parseInt(pageQuery, 10);
+      if (!isNaN(parsedPage) && parsedPage > 0) {
+        page = parsedPage;
+      }
+    }
+    
+    if (page !== Number(pageQuery)) {
+      router.replace({ pathname: router.pathname, query: { ...router.query, page: page.toString() } }, undefined, { shallow: true });
+    }
+    
+    setCurrentPage(page);
+    return page;
+  }, [router]);
 
   const fetchServers = useCallback(async () => {
+    if (!router.isReady) return;
+  
     setLoading(true);
+    const page = validateAndSetPage(router.query.page);
+    
     try {
-      const queryParams = new URLSearchParams(router.query as Record<string, string>);
+      const queryParams = new URLSearchParams({
+        page: page.toString(),
+        serverType: serverType || 'all',
+        sort: sortOption,
+      });
       
-      // Add searchQuery to the queryParams if it exists
+      // Add filters to queryParams
+      Object.entries(filters).forEach(([key, value]) => {
+        if (Array.isArray(value) && value.length > 0) {
+          queryParams.set(key, value.join(','));
+        } else if (value !== null && value !== undefined) {
+          queryParams.set(key, String(value));
+        }
+      });
+      
       if (searchQuery) {
         queryParams.set('searchQuery', searchQuery);
-      }
-
-      if (serverType) {
-        queryParams.set('serverType', serverType);
       }
       
       const response = await fetch(`/api/wipes?${queryParams.toString()}`);
@@ -239,21 +239,20 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
     } finally {
       setLoading(false);
     }
-  }, [router.query, searchQuery]);
+  }, [router.isReady, router.query.page, searchQuery, serverType, sortOption, filters]);
 
   useEffect(() => {
-    fetchServers();
-  }, [fetchServers]);
+    if (router.isReady) {
+      fetchServers();
+    }
+  }, [fetchServers, router.isReady]);
 
   useEffect(() => {
-    setCurrentPage(1);
-    router.push({ pathname: router.pathname, query: { ...router.query, page: 1 } }, undefined, { shallow: true });
-  }, [serverType, searchQuery]);
-
-  const handlePageChange = (newPage: number) => {
-    setCurrentPage(newPage);
-    router.push({ pathname: router.pathname, query: { ...router.query, page: newPage } }, undefined, { shallow: true });
-  };
+    if (router.isReady && !router.query.page) {
+      router.replace({ pathname: router.pathname, query: { ...router.query, page: '1' } }, undefined, { shallow: true });
+    }
+  }, [router.isReady, router.query]);
+  
 
   const renderCheckboxGroup = useCallback((items: string[], filterName: keyof Filters) => (
     <div className="flex flex-col space-y-1 pl-1">
@@ -299,6 +298,8 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
       const timeUntilWipe = getTimeUntilWipe(new Date(server.next_wipe));
 
       return (
+        <Link href={`/server/${server.server_steam_id}`} passHref legacyBehavior key={index}>
+      <a className="block"> {/* Ensure you use a block-level element */}
         <div className="server-wrapper bg-black-700/80 flex md:gap-12 gap-4 md:flex-row flex-col justify-between rounded-lg relative md:px-6 md:pe-12 hover:shadow-[5px_5px_20px_0px_#CE402A] transition duration-350 ease-in-out" key={index}>
           <div className="flex max-sm:items-start max-md:p-6 max-md:pb-0 max-md:gap-2 md:pl-0 md:p-8">
             <div className="grid md:grid-cols-[100px_100px] grid-cols-[auto_auto] gap-2 place-content-center">
@@ -370,6 +371,8 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
             </div>
           </div>
         </div>
+        </a>
+    </Link>
       );
     })
   ), [servers, userTimeZone]);
@@ -618,15 +621,15 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
                     <>
                       {renderServers()}
                       <DesktopPagination
-                        currentPage={currentPage}
-                        totalPages={Math.ceil(totalServers / itemsPerPage)}
-                        baseUrl=""
-                      />
-                      <MobilePagination
-                        currentPage={currentPage}
-                        totalPages={Math.ceil(totalServers / itemsPerPage)}
-                        baseUrl=""
-                      />
+          currentPage={currentPage}
+          totalPages={Math.ceil(totalServers / itemsPerPage)}
+          baseUrl=""
+        />
+        <MobilePagination
+          currentPage={currentPage}
+          totalPages={Math.ceil(totalServers / itemsPerPage)}
+          baseUrl=""
+        />
                     </>
                   ) : (
                     <NoServersMessage />
