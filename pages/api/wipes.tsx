@@ -169,31 +169,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const db = client.db("upcoming_wipes");
     const serversCollection = db.collection("servers");
 
-    // Use an aggregation pipeline for better performance
-    const aggregationPipeline = [
-      { $match: filters },
-      { $sort: sortOption },
-      { $skip: offset },
-      { $limit: itemsPerPage },
-      {
-        $project: {
-          next_wipe: 1,
-          country_code: 1,
-          name: 1,
-          rank: 1,
-          server_type: 1,
-          max_population_last_wipe: 1,
-          ip: 1,
-          address: 1,
-          server_steam_id: 1
-        }
-      }
-    ];
+    const totalServers = await serversCollection.countDocuments(filters);
 
-    const [servers, totalServers] = await Promise.all([
-      serversCollection.aggregate(aggregationPipeline).toArray(),
-      serversCollection.countDocuments(filters)
-    ]);
+    const projection = {
+      next_wipe: 1,
+      country_code: 1,
+      name: 1,
+      rank: 1,
+      server_type: 1,
+      max_population_last_wipe: 1,
+      ip: 1,
+      address: 1,
+      server_steam_id: 1
+    };
+
+    const servers = await serversCollection
+      .find(filters)
+      .project(projection)
+      .sort(sortOption)
+      .skip(offset)
+      .limit(itemsPerPage)
+      .toArray();
 
     return res.status(200).json({
       status: "success",
