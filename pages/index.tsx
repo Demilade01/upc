@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { GetServerSideProps } from 'next';
 import LanguageAndCountrySelector from "../components/LanguageAndCountrySelector";
 import Header from "../components/Header";
 import ServerList from "../components/ServerList";
@@ -6,9 +7,14 @@ import Head from "next/head";
 import { NextUIProvider } from "@nextui-org/react";
 import Link from 'next/link';
 import GoogleTagManager from '../components/GoogleTagManager';
-import { useRouter } from 'next/router';
+import clientPromise from "../lib/mongodb";
 
-export default function Home() {
+interface HomeProps {
+  initialServers: any[];
+  totalServers: number;
+}
+
+export default function Home({ initialServers, totalServers }: HomeProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [serverType, setServerType] = useState('all');
 
@@ -35,6 +41,8 @@ export default function Home() {
           />
           <main className="flex-grow">
             <ServerList
+              initialServers={initialServers}
+              totalServers={totalServers}
               searchQuery={searchQuery}
               serverType={serverType}
             />
@@ -72,3 +80,55 @@ export default function Home() {
     </>
   );
 }
+
+export const getServerSideProps: GetServerSideProps = async () => {
+  try {
+    const client = await clientPromise;
+    const db = client.db("upcoming_wipes");
+    const serversCollection = db.collection("servers");
+
+    const filters = {
+      next_wipe: { $gt: new Date() },
+      name: {
+        $not: {
+          $regex: "(Sandbox|Noclip|Training,Creative,AimTrain)",
+          $options: "i",
+        },
+      },
+    };
+
+    const totalServers = await serversCollection.countDocuments(filters);
+
+    const initialServers = await serversCollection
+      .find(filters)
+      .project({
+        next_wipe: 1,
+        country_code: 1,
+        name: 1,
+        rank: 1,
+        server_type: 1,
+        max_population_last_wipe: 1,
+        ip: 1,
+        address: 1,
+        server_steam_id: 1
+      })
+      .sort({ next_wipe: 1 })
+      .limit(10)
+      .toArray();
+
+    return {
+      props: {
+        initialServers: JSON.parse(JSON.stringify(initialServers)),
+        totalServers,
+      },
+    };
+  } catch (e) {
+    console.error(e);
+    return {
+      props: {
+        initialServers: [],
+        totalServers: 0,
+      },
+    };
+  }
+};

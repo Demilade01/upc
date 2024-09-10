@@ -67,11 +67,13 @@ interface InfoItemProps {
 }
 
 const InfoItem: React.FC<InfoItemProps> = ({ icon, label, value }) => (
-  <div className="flex items-center">
-    {React.cloneElement(icon, { className: "text-primary mr-2", size: 18 })}
-    <div className="ml-2">
+  <div className="flex items-start">
+    <div className="flex-shrink-0 mt-1">
+      {React.cloneElement(icon, { className: "text-primary", size: 18 })}
+    </div>
+    <div className="ml-3 min-w-0 flex-1">
       <p className="text-sm text-gray-400">{label}</p>
-      <p className="font-semibold text-white">{value}</p>
+      <p className="font-semibold text-white break-words">{value}</p>
     </div>
   </div>
 );
@@ -83,9 +85,9 @@ interface FlagInfoItemProps {
   }
   
   const FlagInfoItem: React.FC<FlagInfoItemProps> = ({ countryCode, label, value }) => (
-    <div className="flex items-center">
+    <div className="flex items-start">
       {countryCode ? (
-        <div className="w-[18px] h-[13.5px] mr-2 overflow-hidden">
+        <div className="flex-shrink-0 mt-1 w-[18px] h-[13.5px] overflow-hidden">
           <Image
             src={`https://flagcdn.com/w20/${countryCode}.png`}
             alt={`${value} flag`}
@@ -95,9 +97,9 @@ interface FlagInfoItemProps {
           />
         </div>
       ) : null}
-      <div className="ml-2">
+      <div className="ml-3 min-w-0 flex-1">
         <p className="text-sm text-gray-400">{label}</p>
-        <p className="font-semibold text-white">{value}</p>
+        <p className="font-semibold text-white break-words">{value}</p>
       </div>
     </div>
   );

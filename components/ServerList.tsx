@@ -1,4 +1,3 @@
-"use client";
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import LangDropdown from "./Select";
 import { Slider } from "@nextui-org/react";
@@ -70,6 +69,8 @@ interface Server {
 }
 
 interface ServerListProps {
+  initialServers: Server[];
+  totalServers: number;
   searchQuery?: string;
   serverType?: string;
 }
@@ -92,13 +93,12 @@ interface SliderState {
   step: number;
 }
 
-const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
+const ServerList: React.FC<ServerListProps> = ({ initialServers, totalServers, searchQuery, serverType }) => {
   const router = useRouter();
   const [toggleMenu, setToggleMenu] = useState<boolean>(false);
-  const [servers, setServers] = useState<Server[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [servers, setServers] = useState<Server[]>(initialServers);
+  const [loading, setLoading] = useState<boolean>(false);
   const [sortOption, setSortOption] = useState<string>("wipe_time");
-  const [totalServers, setTotalServers] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [filters, setFilters] = useState<Filters>({
     maximumPopulation: [],
@@ -182,7 +182,6 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
       return newFilters;
     });
 
-    // Reset page to 1 when a filter changes
     router.push({ pathname: router.pathname, query: { ...router.query, page: '1' } }, undefined, { shallow: true });
   }, [router]);
 
@@ -216,7 +215,6 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
         sort: sortOption,
       });
       
-      // Add filters to queryParams
       Object.entries(filters).forEach(([key, value]) => {
         if (Array.isArray(value) && value.length > 0) {
           queryParams.set(key, value.join(','));
@@ -233,13 +231,12 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
       if (!response.ok) throw new Error('Network response was not ok');
       const data = await response.json();
       setServers(data.data);
-      setTotalServers(data.total);
     } catch (error) {
       console.error('Failed to fetch servers:', error);
     } finally {
       setLoading(false);
     }
-  }, [router.isReady, router.query.page, searchQuery, serverType, sortOption, filters]);
+  }, [router.isReady, router.query.page, searchQuery, serverType, sortOption, filters, validateAndSetPage]);
 
   useEffect(() => {
     if (router.isReady) {
@@ -252,7 +249,6 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
       router.replace({ pathname: router.pathname, query: { ...router.query, page: '1' } }, undefined, { shallow: true });
     }
   }, [router.isReady, router.query]);
-  
 
   const renderCheckboxGroup = useCallback((items: string[], filterName: keyof Filters) => (
     <div className="flex flex-col space-y-1 pl-1">
@@ -299,80 +295,84 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
 
       return (
         <Link href={`/server/${server.server_steam_id}`} passHref legacyBehavior key={index}>
-      <a className="block"> {/* Ensure you use a block-level element */}
-        <div className="server-wrapper bg-black-700/80 flex md:gap-12 gap-4 md:flex-row flex-col justify-between rounded-lg relative md:px-6 md:pe-12 hover:shadow-[5px_5px_20px_0px_#CE402A] transition duration-350 ease-in-out" key={index}>
-          <div className="flex max-sm:items-start max-md:p-6 max-md:pb-0 max-md:gap-2 md:pl-0 md:p-8">
-            <div className="grid md:grid-cols-[100px_100px] grid-cols-[auto_auto] gap-2 place-content-center">
-              <svg
-                className="h-11 w-11 max-md:h-6 max-md:w-11 fill-none stroke-primary transition duration-300 ease-in-out hover:fill-primary"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-              >
-                <path d="M12 .587l3.515 7.125 7.485.688-5.421 5.277 1.421 7.323-6.5-3.412-6.5 3.412 1.421-7.323-5.421-5.277 7.485-.688z" />
-              </svg>
-              <div className="w-[36px] h-[27px] flex items-center justify-center overflow-hidden">
-                <img
-                  className="w-full h-full object-cover"
-                  src={`https://flagcdn.com/36x27/${server.country_code.toLowerCase()}.png`}
-                  alt="Server Region Flag"
-                  width={36}
-                  height={27}
-                />
-              </div>
-            </div>
-            <div className="flex flex-col justify-center items-center text-center">
-              <p className="text-lg max-md:text-sm text-white font-extrabold text-center break-all mb-2">
-                {server.name}
-              </p>
-              <div className="flex flex-wrap justify-center gap-2 text-xs max-md:hidden">
-                <div className="flex items-center bg-black-800 rounded-full px-3 py-1">
-                  <Trophy size={14} className="text-primary mr-1" />
-                  <span className="text-white">{server.rank}</span>
+          <a className="block">
+            <div className="server-wrapper bg-black-700/80 flex md:gap-12 gap-4 md:flex-row flex-col justify-between rounded-lg relative md:px-6 md:pe-12 hover:shadow-[5px_5px_20px_0px_#CE402A] transition duration-350 ease-in-out">
+              <div className="flex max-sm:items-start max-md:p-6 max-md:pb-0 max-md:gap-2 md:pl-0 md:p-8">
+                <div className="grid md:grid-cols-[100px_100px] grid-cols-[auto_auto] gap-2 place-content-center">
+                  <svg
+                    className="h-11 w-11 max-md:h-6 max-md:w-11 fill-none stroke-primary transition duration-300 ease-in-out hover:fill-primary"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M12 .587l3.515 7.125 7.485.688-5.421 5.277 1.421 7.323-6.5-3.412-6.5 3.412 1.421-7.323-5.421-5.277 7.485-.688z" />
+                  </svg>
+                  <div className="w-[36px] h-[27px] flex items-center justify-center overflow-hidden">
+                    <img
+                      className="w-full h-full object-cover"
+                      src={`https://flagcdn.com/36x27/${server.country_code.toLowerCase()}.png`}
+                      alt="Server Region Flag"
+                      width={36}
+                      height={27}
+                    />
+                  </div>
                 </div>
-                <div className="flex items-center bg-black-800 rounded-full px-3 py-1">
-                  <Server size={14} className="text-primary mr-1" />
-                  <span className="text-white">{capitalizeFirstLetter(server.server_type)}</span>
+                <div className="flex flex-col justify-center items-center text-center">
+                  <p className="text-lg max-md:text-sm text-white font-extrabold text-center break-all mb-2">
+                    {server.name}
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-2 text-xs max-md:hidden">
+                    <div className="flex items-center bg-black-800 rounded-full px-3 py-1">
+                      <Trophy size={14} className="text-primary mr-1" />
+                      <span className="text-white">{server.rank}</span>
+                    </div>
+                    <div className="flex items-center bg-black-800 rounded-full px-3 py-1">
+                      <Server size={14} className="text-primary mr-1" />
+                      <span className="text-white">{capitalizeFirstLetter(server.server_type)}</span>
+                    </div>
+                    <div className="flex items-center bg-black-800 rounded-full px-3 py-1" title="Average population on last wipe day">
+                      <Users size={14} className="text-primary mr-1" />
+                      <span className="text-white">AVG Population: <span className="text-primary font-bold">{server.max_population_last_wipe}</span></span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center bg-black-800 rounded-full px-3 py-1" title="Average population on last wipe day">
-                  <Users size={14} className="text-primary mr-1" />
-                  <span className="text-white">AVG Population: <span className="text-primary font-bold">{server.max_population_last_wipe}</span></span>
+              </div>
+              <div className="max-md:w-full flex-shrink-0">
+                <div className="flex flex-wrap justify-center gap-2 text-xs mb-2 md:hidden">
+                  <div className="flex items-center bg-black-800 rounded-full px-3 py-1">
+                    <Trophy size={14} className="text-primary mr-1" />
+                    <span className="text-white">{server.rank}</span>
+                  </div>
+                  <div className="flex items-center bg-black-800 rounded-full px-3 py-1">
+                    <Server size={14} className="text-primary mr-1" />
+                    <span className="text-white">{capitalizeFirstLetter(server.server_type)}</span>
+                  </div>
+                  <div className="flex items-center bg-black-800 rounded-full px-3 py-1" title="Average population on last wipe day">
+                    <Users size={14} className="text-primary mr-1" />
+                    <span className="text-white">AVG Population: <span className="text-primary font-bold">{server.max_population_last_wipe}</span></span>
+                  </div>
+                </div>
+                <div className="bg-primary hover:bg-primary px-2 py-4 max-md:py-1.5 text-white text-center font-medium text-xl md:min-h-[142px] h-full font-Rammetto flex items-center justify-between flex-col max-md:gap-1.5 max-md:mb-4">
+                  <div className="flex flex-col max-md:flex-row">
+                    <span className="mr-2">WIPE IN</span>
+                    <span className="text-black">{timeUntilWipe}</span>
+                  </div>
+                  <div className="text-[11px]">{formattedWipeDate}</div>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      copyToClipboard(server.address ?? server.ip);
+                    }}
+                    className="mt-2 px-4 py-2 bg-black text-white text-sm font-inter font-medium rounded-lg bg-gray-900 hover:bg-gray-800 transition duration-300 ease-in-out transform hover:scale-110 hover:shadow-xl"
+                    aria-label={`Connect to server ${server.name}`}
+                  >
+                    Connect
+                  </button>
                 </div>
               </div>
             </div>
-          </div>
-          <div className="max-md:w-full flex-shrink-0">
-            <div className="flex flex-wrap justify-center gap-2 text-xs mb-2 md:hidden">
-              <div className="flex items-center bg-black-800 rounded-full px-3 py-1">
-                <Trophy size={14} className="text-primary mr-1" />
-                <span className="text-white">{server.rank}</span>
-              </div>
-              <div className="flex items-center bg-black-800 rounded-full px-3 py-1">
-                <Server size={14} className="text-primary mr-1" />
-                <span className="text-white">{capitalizeFirstLetter(server.server_type)}</span>
-              </div>
-              <div className="flex items-center bg-black-800 rounded-full px-3 py-1" title="Average population on last wipe day">
-                <Users size={14} className="text-primary mr-1" />
-                <span className="text-white">AVG Population: <span className="text-primary font-bold">{server.max_population_last_wipe}</span></span>
-              </div>
-            </div>
-            <div className="bg-primary hover:bg-primary px-2 py-4 max-md:py-1.5 text-white text-center font-medium text-xl md:min-h-[142px] h-full font-Rammetto flex items-center justify-between flex-col max-md:gap-1.5 max-md:mb-4">
-              <div className="flex flex-col max-md:flex-row">
-                <span className="mr-2">WIPE IN</span>
-                <span className="text-black">{timeUntilWipe}</span>
-              </div>
-              <div className="text-[11px]">{formattedWipeDate}</div>
-              <button
-                onClick={() => copyToClipboard(server.address ?? server.ip)}
-                className="mt-2 px-4 py-2 bg-black text-white text-sm font-inter font-medium rounded-lg bg-gray-900 hover:bg-gray-800 transition duration-300 ease-in-out transform hover:scale-110 hover:shadow-xl"
-                aria-label={`Connect to server ${server.name}`}
-              >
-                Connect
-              </button>
-            </div>
-          </div>
-        </div>
-        </a>
-    </Link>
+          </a>
+        </Link>
       );
     })
   ), [servers, userTimeZone]);
@@ -501,298 +501,297 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
                               "text-white bg-primary",
                             ],
                           },
-                        }}
+                        }}/>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xl border-b border-primary pb-2 mb-2">
+                          Map Size
+                        </label>
+                        <div className="relative py-3 px-6">
+                          <Slider
+                            key={mapSizeSlider.defaultValue.join('-')}
+                            step={mapSizeSlider.step}
+                            maxValue={mapSizeSlider.maxValue}
+                            minValue={mapSizeSlider.minValue}
+                            defaultValue={mapSizeSlider.defaultValue}
+                            marks={mapSizeSlider.marks}
+                            showSteps={true}
+                            showTooltip={true}
+                            showOutline={true}
+                            disableThumbScale={true}
+                            onChange={(value) => handleFilterChange("mapSize", value)}
+                            classNames={{
+                              base: "max-w-md",
+                              filler: "bg-primary",
+                              labelWrapper: "mb-2",
+                              label: "font-medium text-default-700 text-medium",
+                              value: "font-medium text-default-500 text-small",
+                              thumb: [
+                                "transition-size",
+                                "bg-primary h-5 w-5 after:h-4 after:w-4 after:bg-primary ring-primary",
+                                "data-[dragging=true]:shadow-lg data-[dragging=true]:shadow-black/20",
+                                "data-[dragging=true]:w-5 data-[dragging=true]:h-5 data-[dragging=true]:after:h-4 data-[dragging=true]:after:w-4",
+                              ],
+                              step: "data-[in-range=true]:bg-white dark:data-[in-range=true]:bg-white/50",
+                            }}
+                            tooltipProps={{
+                              offset: 10,
+                              placement: "bottom",
+                              classNames: {
+                                base: [
+                                  "bg-primary rounded-lg",
+                                ],
+                                content: [
+                                  "py-2 shadow-xl",
+                                  "text-white bg-primary",
+                                ],
+                              },
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-3 relative">
+                      <div className="region-selector mt-3">
+                        <label className="block text-xl border-b border-primary pb-2 mb-2">
+                          Region
+                        </label>
+                        {renderCheckboxGroup(staticRegions, "regions")}
+                      </div>
+                      <div className="space-y-2">
+                        <div className="Team-limit">
+                          <label className="block text-xl border-b border-primary pb-2 mb-2">
+                            Group Limit
+                          </label>
+                          {renderCheckboxGroup(staticGroupLimits, "groupLimit")}
+                        </div>
+                      </div>
+                      <div className="space-y-2"></div>
+                      <div className="Team-UI">
+                        <label className="block text-xl border-b border-primary pb-2 mb-2">
+                          Team UI
+                        </label>
+                        {renderCheckboxGroup(staticTeamUILimits, "teamUILimit")}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+    
+                <div className="">
+                  <div className="text-right flex justify-center gap-2 relative z-[1] mx-auto lg:max-w-none lg:mx-0">
+                    <div className="flex-1 filter inline-block lg:hidden ">
+                      <div className="relative text-left w-full">
+                        <div className="inline-block w-full">
+                          <button
+                            className="w-full bg-black-700 text-white hover:bg-gray-800 flex items-center md:justify-[unset] justify-between gap-6 px-4 py-1.5 rounded-lg"
+                            id="collapsible-trigger"
+                            onClick={() => setToggleMenu(!toggleMenu)}
+                            aria-label="Toggle filters"
+                          >
+                            <span className="">Filter</span>
+                            <span className="inline-block">
+                              <img src="./images/settings-orange.png" alt="Filter Settings" />
+                            </span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex-1 sort">
+                      <div className="inline-block text-right lg:w-[258px] w-full mt-0 lg:mt-4">
+                        <LangDropdown
+                          data={SortContent.map(content => ({
+                            ...content,
+                            img: content.img.src
+                          }))}
+                          hasImage
+                          placeholderIconOff
+                          type="sort"
+                          valueClass="!text-sm"
+                          defaultValue="Wipe Time"
+                          onChange={handleSortChange}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  {!loading && (
+                    <div className="space-y-5 mt-8">
+                      {servers.length > 0 ? (
+                        <>
+                          {renderServers()}
+                          <DesktopPagination
+                            currentPage={currentPage}
+                            totalPages={Math.ceil(totalServers / itemsPerPage)}
+                            baseUrl=""
+                          />
+                          <MobilePagination
+                            currentPage={currentPage}
+                            totalPages={Math.ceil(totalServers / itemsPerPage)}
+                            baseUrl=""
+                          />
+                        </>
+                      ) : (
+                        <NoServersMessage />
+                      )}
+                      <ToastContainer
+                        position="top-right"
+                        autoClose={3000}
+                        hideProgressBar={false}
+                        newestOnTop={false}
+                        closeOnClick
+                        rtl={false}
+                        pauseOnFocusLoss
+                        draggable
+                        pauseOnHover
                       />
                     </div>
-                  </div>
-                  <div>
-                    <label className="block text-xl border-b border-primary pb-2 mb-2">
-                      Map Size
-                    </label>
-                    <div className="relative py-3 px-6">
-                      <Slider
-                        key={mapSizeSlider.defaultValue.join('-')}
-                        step={mapSizeSlider.step}
-                        maxValue={mapSizeSlider.maxValue}
-                        minValue={mapSizeSlider.minValue}
-                        defaultValue={mapSizeSlider.defaultValue}
-                        marks={mapSizeSlider.marks}
-                        showSteps={true}
-                        showTooltip={true}
-                        showOutline={true}
-                        disableThumbScale={true}
-                        onChange={(value) => handleFilterChange("mapSize", value)}
-                        classNames={{
-                          base: "max-w-md",
-                          filler: "bg-primary",
-                          labelWrapper: "mb-2",
-                          label: "font-medium text-default-700 text-medium",
-                          value: "font-medium text-default-500 text-small",
-                          thumb: [
-                            "transition-size",
-                            "bg-primary h-5 w-5 after:h-4 after:w-4 after:bg-primary ring-primary",
-                            "data-[dragging=true]:shadow-lg data-[dragging=true]:shadow-black/20",
-                            "data-[dragging=true]:w-5 data-[dragging=true]:h-5 data-[dragging=true]:after:h-4 data-[dragging=true]:after:w-4",
-                          ],
-                          step: "data-[in-range=true]:bg-white dark:data-[in-range=true]:bg-white/50",
-                        }}
-                        tooltipProps={{
-                          offset: 10,
-                          placement: "bottom",
-                          classNames: {
-                            base: [
-                              "bg-primary rounded-lg",
-                            ],
-                            content: [
-                              "py-2 shadow-xl",
-                              "text-white bg-primary",
-                            ],
-                          },
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div className="space-y-3 relative">
-                  <div className="region-selector mt-3">
-                    <label className="block text-xl border-b border-primary pb-2 mb-2">
-                      Region
-                    </label>
-                    {renderCheckboxGroup(staticRegions, "regions")}
-                  </div>
-                  <div className="space-y-2">
-                    <div className="Team-limit">
-                      <label className="block text-xl border-b border-primary pb-2 mb-2">
-                        Group Limit
-                      </label>
-                      {renderCheckboxGroup(staticGroupLimits, "groupLimit")}
-                    </div>
-                  </div>
-                  <div className="space-y-2"></div>
-                  <div className="Team-UI">
-                    <label className="block text-xl border-b border-primary pb-2 mb-2">
-                      Team UI
-                    </label>
-                    {renderCheckboxGroup(staticTeamUILimits, "teamUILimit")}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="">
-              <div className="text-right flex justify-center gap-2 relative z-[1] mx-auto lg:max-w-none lg:mx-0">
-                <div className="flex-1 filter inline-block lg:hidden ">
-                  <div className="relative text-left w-full">
-                    <div className="inline-block w-full">
-                      <button
-                        className="w-full bg-black-700 text-white hover:bg-gray-800 flex items-center md:justify-[unset] justify-between gap-6 px-4 py-1.5 rounded-lg"
-                        id="collapsible-trigger"
-                        onClick={() => setToggleMenu(!toggleMenu)}
-                        aria-label="Toggle filters"
-                      >
-                        <span className="">Filter</span>
-                        <span className="inline-block">
-                          <img src="./images/settings-orange.png" alt="Filter Settings" />
-                        </span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex-1 sort">
-                  <div className="inline-block text-right lg:w-[258px] w-full mt-0 lg:mt-4">
-                    <LangDropdown
-                      data={SortContent.map(content => ({
-                        ...content,
-                        img: content.img.src
-                      }))}
-                      hasImage
-                      placeholderIconOff
-                      type="sort"
-                      valueClass="!text-sm"
-                      defaultValue="Wipe Time"
-                      onChange={handleSortChange}
-                    />
-                  </div>
-                </div>
-              </div>
-              {!loading && (
-                <div className="space-y-5 mt-8">
-                  {servers.length > 0 ? (
-                    <>
-                      {renderServers()}
-                      <DesktopPagination
-          currentPage={currentPage}
-          totalPages={Math.ceil(totalServers / itemsPerPage)}
-          baseUrl=""
-        />
-        <MobilePagination
-          currentPage={currentPage}
-          totalPages={Math.ceil(totalServers / itemsPerPage)}
-          baseUrl=""
-        />
-                    </>
-                  ) : (
-                    <NoServersMessage />
                   )}
-                  <ToastContainer
-                    position="top-right"
-                    autoClose={3000}
-                    hideProgressBar={false}
-                    newestOnTop={false}
-                    closeOnClick
-                    rtl={false}
-                    pauseOnFocusLoss
-                    draggable
-                    pauseOnHover
-                  />
                 </div>
-              )}
+              </div>
             </div>
-          </div>
-        </div>
-      </section>
-    </main>
-  );
-};
-
-interface PaginationProps {
-  currentPage: number;
-  totalPages: number;
-  baseUrl: string;
-}
-
-export const DesktopPagination: React.FC<PaginationProps> = ({ currentPage, totalPages, baseUrl }) => {
-  const router = useRouter();
-
-  const generatePageNumbers = () => {
-    let startPage: number, endPage: number;
-
-    if (totalPages <= 5) {
-      startPage = 1;
-      endPage = totalPages;
-    } else {
-      if (currentPage <= 3) {
-        startPage = 1;
-        endPage = 5;
-      } else if (currentPage + 2 >= totalPages) {
-        startPage = totalPages - 4;
-        endPage = totalPages;
-      } else {
-        startPage = currentPage - 2;
-        endPage = currentPage + 2;
-      }
+          </section>
+        </main>
+      );
+    };
+    
+    interface PaginationProps {
+      currentPage: number;
+      totalPages: number;
+      baseUrl: string;
     }
-
-    return Array.from({ length: (endPage - startPage + 1) }, (_, i) => startPage + i);
-  };
-
-  const createPageUrl = (page: number) => {
-    const query = { ...router.query, page: page.toString() };
-    return { pathname: baseUrl, query };
-  };
-
-  return (
-    <nav className="flex items-center justify-center gap-1 !mt-24 max-md:hidden" aria-label="Pagination">
-      <Link
-        href={createPageUrl(Math.max(currentPage - 1, 1))}
-        aria-label="Previous page"
-        className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-white hover:bg-primary bg-black-700 rounded-lg focus:z-20 focus:outline-offset-0 rotate-180 ${currentPage === 1 ? 'pointer-events-none opacity-50' : ''}`}
-      >
-        <span className="sr-only">Previous</span>
-        <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-          <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
-        </svg>
-      </Link>
-      {generatePageNumbers().map((page) => (
-        <Link
-          key={page}
-          href={createPageUrl(page)}
-          aria-label={`Go to page ${page}`}
-          aria-current={page === currentPage ? "page" : undefined}
-          className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold text-white ${page === currentPage ? "bg-primary" : "hover:bg-primary bg-black-700"} rounded focus:z-20 focus:outline-offset-0`}
-        >
-          {page}
-        </Link>
-      ))}
-      <Link
-        href={createPageUrl(Math.min(currentPage + 1, totalPages))}
-        aria-label="Next page"
-        className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-white hover:bg-primary bg-black-700 rounded focus:z-20 focus:outline-offset-0 ${currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}`}
-      >
-        <span className="sr-only">Next</span>
-        <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-          <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
-        </svg>
-      </Link>
-    </nav>
-  );
-};
-
-export const MobilePagination: React.FC<PaginationProps> = ({ currentPage, totalPages, baseUrl }) => {
-  const router = useRouter();
-
-  const createPageUrl = (page: number) => {
-    const query = { ...router.query, page: page.toString() };
-    return { pathname: baseUrl, query };
-  };
-
-  return (
-    <nav className="flex items-center justify-center gap-2 mt-6 md:hidden" aria-label="Pagination">
-      <Link
-        href={createPageUrl(Math.max(currentPage - 1, 1))}
-        aria-label="Previous page"
-        className={`px-3 py-1 text-white bg-black-700 rounded-lg hover:bg-primary ${currentPage === 1 ? 'pointer-events-none opacity-50' : ''}`}
-      >
-        Prev
-      </Link>
-      <span className="text-white">
-        Page {currentPage} of {totalPages}
-      </span>
-      <Link
-        href={createPageUrl(Math.min(currentPage + 1, totalPages))}
-        aria-label="Next page"
-        className={`px-3 py-1 text-white bg-black-700 rounded-lg hover:bg-primary ${currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}`}
-      >
-        Next
-      </Link>
-    </nav>
-  );
-};
-
-const NoServersMessage: React.FC = () => {
-  const noServerMessages: string[] = [
-    "Servers? Gone. Just like my base after that offline raid...",
-    "Servers? Gone. Like my loot after saying 'friendly' to a full metal AK guy...",
-    "Servers missing like my teammate's callouts during a raid defense...",
-    "Servers missing like my teammate's gamesense...",
-    "No servers? Not even Rust Academy could fake this footage...",
-    "No servers? Even Rust Academy couldn't script this scenario...",
-    "No servers? Enardo must've summoned a 200-man zerg to DDOS them all...",
-    "Servers gone MIA. AloneInTokyo probably solo defended against every Rust player simultaneously...",
-    "Can't find servers. Qaixxx might have wiped every single player off the face of Rust...",
-    "Servers missing. Posty probably ripped another shirt and accidentally set all Rust servers on fire...",
-    "No servers detected. They're all busy watching AloneInTokyo's latest silent raid defense...",
-    "Servers vanished. Enardo's latest trap was so effective, it caught all the servers too...",
-    "Servers gone. Posty's shirtless rampage was too much for them to handle...",
-    "Servers are gone. They might be hiding under a foundation with Memeio...",
-  ];
-
-  const [randomMessage] = useState<string>(() => {
-    const randomIndex = Math.floor(Math.random() * noServerMessages.length);
-    return noServerMessages[randomIndex];
-  });
-
-  return (
-    <div className="flex flex-col items-center justify-center mt-8">
-      <img
-        src="./images/hazmat_running.gif"
-        alt="No servers found"
-        className="h-[200px] object-cover rounded-lg mb-4"
-      />
-      <p className="text-white text-xl font-semibold text-center">{randomMessage}</p>
-      <p className="text-gray-400 text-sm mt-2">Try adjusting your filters or search query!</p>
-    </div>
-  );
-};
-
-export default ServerList;
+    
+    export const DesktopPagination: React.FC<PaginationProps> = ({ currentPage, totalPages, baseUrl }) => {
+      const router = useRouter();
+    
+      const generatePageNumbers = () => {
+        let startPage: number, endPage: number;
+    
+        if (totalPages <= 5) {
+          startPage = 1;
+          endPage = totalPages;
+        } else {
+          if (currentPage <= 3) {
+            startPage = 1;
+            endPage = 5;
+          } else if (currentPage + 2 >= totalPages) {
+            startPage = totalPages - 4;
+            endPage = totalPages;
+          } else {
+            startPage = currentPage - 2;
+            endPage = currentPage + 2;
+          }
+        }
+    
+        return Array.from({ length: (endPage - startPage + 1) }, (_, i) => startPage + i);
+      };
+    
+      const createPageUrl = (page: number) => {
+        const query = { ...router.query, page: page.toString() };
+        return { pathname: baseUrl, query };
+      };
+    
+      return (
+        <nav className="flex items-center justify-center gap-1 !mt-24 max-md:hidden" aria-label="Pagination">
+          <Link
+            href={createPageUrl(Math.max(currentPage - 1, 1))}
+            aria-label="Previous page"
+            className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-white hover:bg-primary bg-black-700 rounded-lg focus:z-20 focus:outline-offset-0 rotate-180 ${currentPage === 1 ? 'pointer-events-none opacity-50' : ''}`}
+          >
+            <span className="sr-only">Previous</span>
+            <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
+            </svg>
+          </Link>
+          {generatePageNumbers().map((page) => (
+            <Link
+              key={page}
+              href={createPageUrl(page)}
+              aria-label={`Go to page ${page}`}
+              aria-current={page === currentPage ? "page" : undefined}
+              className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold text-white ${page === currentPage ? "bg-primary" : "hover:bg-primary bg-black-700"} rounded focus:z-20 focus:outline-offset-0`}
+            >
+              {page}
+            </Link>
+          ))}
+          <Link
+            href={createPageUrl(Math.min(currentPage + 1, totalPages))}
+            aria-label="Next page"
+            className={`relative inline-flex items-center rounded-r-md px-2 py-2 text-white hover:bg-primary bg-black-700 rounded focus:z-20 focus:outline-offset-0 ${currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}`}
+          >
+            <span className="sr-only">Next</span>
+            <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
+            </svg>
+          </Link>
+        </nav>
+      );
+    };
+    
+    export const MobilePagination: React.FC<PaginationProps> = ({ currentPage, totalPages, baseUrl }) => {
+      const router = useRouter();
+    
+      const createPageUrl = (page: number) => {
+        const query = { ...router.query, page: page.toString() };
+        return { pathname: baseUrl, query };
+      };
+    
+      return (
+        <nav className="flex items-center justify-center gap-2 mt-6 md:hidden" aria-label="Pagination">
+          <Link
+            href={createPageUrl(Math.max(currentPage - 1, 1))}
+            aria-label="Previous page"
+            className={`px-3 py-1 text-white bg-black-700 rounded-lg hover:bg-primary ${currentPage === 1 ? 'pointer-events-none opacity-50' : ''}`}
+          >
+            Prev
+          </Link>
+          <span className="text-white">
+            Page {currentPage} of {totalPages}
+          </span>
+          <Link
+            href={createPageUrl(Math.min(currentPage + 1, totalPages))}
+            aria-label="Next page"
+            className={`px-3 py-1 text-white bg-black-700 rounded-lg hover:bg-primary ${currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}`}
+          >
+            Next
+          </Link>
+        </nav>
+      );
+    };
+    
+    const NoServersMessage: React.FC = () => {
+      const noServerMessages: string[] = [
+        "Servers? Gone. Just like my base after that offline raid...",
+        "Servers? Gone. Like my loot after saying 'friendly' to a full metal AK guy...",
+        "Servers missing like my teammate's callouts during a raid defense...",
+        "Servers missing like my teammate's gamesense...",
+        "No servers? Not even Rust Academy could fake this footage...",
+        "No servers? Even Rust Academy couldn't script this scenario...",
+        "No servers? Enardo must've summoned a 200-man zerg to DDOS them all...",
+        "Servers gone MIA. AloneInTokyo probably solo defended against every Rust player simultaneously...",
+        "Can't find servers. Qaixxx might have wiped every single player off the face of Rust...",
+        "Servers missing. Posty probably ripped another shirt and accidentally set all Rust servers on fire...",
+        "No servers detected. They're all busy watching AloneInTokyo's latest silent raid defense...",
+        "Servers vanished. Enardo's latest trap was so effective, it caught all the servers too...",
+        "Servers gone. Posty's shirtless rampage was too much for them to handle...",
+        "Servers are gone. They might be hiding under a foundation with Memeio...",
+      ];
+    
+      const [randomMessage] = useState<string>(() => {
+        const randomIndex = Math.floor(Math.random() * noServerMessages.length);
+        return noServerMessages[randomIndex];
+      });
+    
+      return (
+        <div className="flex flex-col items-center justify-center mt-8">
+          <img
+            src="./images/hazmat_running.gif"
+            alt="No servers found"
+            className="h-[200px] object-cover rounded-lg mb-4"
+          />
+          <p className="text-white text-xl font-semibold text-center">{randomMessage}</p>
+          <p className="text-gray-400 text-sm mt-2">Try adjusting your filters or search query!</p>
+        </div>
+      );
+    };
+    
+    export default ServerList;

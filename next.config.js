@@ -24,6 +24,14 @@ const nextConfig = {
   experimental: {
     optimizeCss: true,
   },
+  async rewrites() {
+    return [
+      {
+        source: '/sitemap.xml',
+        destination: '/api/sitemap',
+      },
+    ];
+  },
   webpack: (config, { dev, isServer }) => {
     // Webpack optimizations can be added here
     return config
