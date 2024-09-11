@@ -38,7 +38,7 @@ const Header = ({ setSearchQuery, serverType, setServerType }: HeaderProps) => {
             </Link>
 
             <div className="flex justify-center items-center mb-6 space-x-8 h-20">
-              <Link href="https://discord.gg/gKR9zszb" className="cursor-pointer block hover:opacity-75 transition ease-in-out duration-300" target="_blank" rel="noopener noreferrer">
+              <Link href="https://discord.gg/QDnnJ7nqf2" className="cursor-pointer block hover:opacity-75 transition ease-in-out duration-300" target="_blank" rel="noopener noreferrer">
                 <img src="./images/discord.svg" alt="Discord Logo" className="mx-auto w-8 h-6" />
               </Link>
             </div>
