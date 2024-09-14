@@ -9,7 +9,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const db = client.db("upcoming_wipes");
     const serversCollection = db.collection("servers");
 
-    const servers = await serversCollection.find({}, { projection: { server_steam_id: 1 } }).toArray();
+    const servers = await serversCollection.find({}, { projection: { _id: 1 } }).toArray();
     const totalServers = await serversCollection.countDocuments();
     const totalPages = Math.ceil(totalServers / 10); // Assuming 10 servers per page
 
@@ -25,7 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       </url>
       ${servers.map(server => `
         <url>
-          <loc>${BASE_URL}/server/${server.server_steam_id}</loc>
+          <loc>${BASE_URL}/server/${server._id}</loc>
           <lastmod>${currentDate}</lastmod>
           <changefreq>hourly</changefreq>
           <priority>0.8</priority>

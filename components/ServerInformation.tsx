@@ -10,7 +10,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/router';
 
 interface Server {
-  server_steam_id: string;
+  _id: string;
   address: string;
   ip: string;
   port: number;

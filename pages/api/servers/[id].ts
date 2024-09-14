@@ -15,10 +15,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const serversCollection = db.collection("servers");
 
     const server = await serversCollection.findOne(
-        { server_steam_id: id },
+        { _id: new ObjectId(id) },
         {
           projection: {
-            server_steam_id: 1,
             address: 1,
             ip: 1,
             port: 1,

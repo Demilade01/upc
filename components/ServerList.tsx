@@ -66,7 +66,7 @@ interface Server {
   country_code: string;
   address: string;
   ip: string;
-  server_steam_id: string;
+  _id: string;
 }
 
 interface ServerListProps {
@@ -298,7 +298,7 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
       const timeUntilWipe = getTimeUntilWipe(new Date(server.next_wipe));
 
       return (
-        <Link href={`/server/${server.server_steam_id}`} passHref legacyBehavior key={index}>
+        <Link href={`/server/${server._id}`} passHref legacyBehavior key={index}>
       <a className="block"> {/* Ensure you use a block-level element */}
         <div className="server-wrapper bg-black-700/80 flex md:gap-12 gap-4 md:flex-row flex-col justify-between rounded-lg relative md:px-6 md:pe-12 hover:shadow-[5px_5px_20px_0px_#CE402A] transition duration-350 ease-in-out" key={index}>
           <div className="flex max-sm:items-start max-md:p-6 max-md:pb-0 max-md:gap-2 md:pl-0 md:p-8">
