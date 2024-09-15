@@ -36,10 +36,13 @@ interface Server {
   server_type: string;
 }
 
-const ServerInformation: React.FC = () => {
+interface ServerInformationProps {
+  server: Server | null;
+  loading: boolean;
+}
+
+const ServerInformation: React.FC<ServerInformationProps> = ({ server, loading }) => {
   const [isNotificationEnabled, setIsNotificationEnabled] = useState(false);
-  const [server, setServer] = useState<Server | null>(null);
-  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const { id } = router.query;
@@ -70,27 +73,6 @@ const ServerInformation: React.FC = () => {
 
     return formatDate(nextMonth.toISOString());
   };
-
-  useEffect(() => {
-    const fetchServerData = async () => {
-      if (id) {
-        try {
-          setLoading(true);
-          const response = await fetch(`/api/servers/${id}`);
-          if (!response.ok) throw new Error('Failed to fetch server data');
-          const data = await response.json();
-          setServer(data.data);
-        } catch (error) {
-          console.error('Error fetching server data:', error);
-          toast.error('Failed to load server information');
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-
-    fetchServerData();
-  }, [id]);
 
   if (loading) {
     return (
