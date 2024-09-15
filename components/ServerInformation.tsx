@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Trophy, Users, Server as ServerIcon, Map, Globe, Flag, UserPlus, Cpu, Bell, ChevronRight, Home, Link2, ChevronUp, ChevronDown } from 'lucide-react';
-import { Slider } from "@nextui-org/react";
+import { Trophy, Users, Server as ServerIcon, ChevronRight, Home, ChevronUp, ChevronDown } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Link from 'next/link';
@@ -60,28 +59,23 @@ const ServerInformation: React.FC = () => {
   const getNextForceWipe = (): string => {
     const now = new Date();
     let nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-  
+
     // Find the first Thursday of the next month
     while (nextMonth.getDay() !== 4) { // 4 represents Thursday
       nextMonth.setDate(nextMonth.getDate() + 1);
     }
-  
+
     // Set the time to 7:00 PM
     nextMonth.setHours(19, 0, 0, 0); // 19:00:00.000
-  
-    return formatDate(nextMonth.toISOString());
-  };
 
-  const truncateDescription = (description: string, maxLines: number = 4) => {
-    const lines = description.split('\n');
-    if (lines.length <= maxLines) return description;
-    return lines.slice(0, maxLines).join('\n') + '...';
+    return formatDate(nextMonth.toISOString());
   };
 
   useEffect(() => {
     const fetchServerData = async () => {
       if (id) {
         try {
+          setLoading(true);
           const response = await fetch(`/api/servers/${id}`);
           if (!response.ok) throw new Error('Failed to fetch server data');
           const data = await response.json();
@@ -98,27 +92,38 @@ const ServerInformation: React.FC = () => {
     fetchServerData();
   }, [id]);
 
-  const copyToClipboard = async (text: string): Promise<void> => {
-    try {
-      await navigator.clipboard.writeText('connect ' + text);
-      toast.success('Server IP copied to clipboard!');
-    } catch (err) {
-      toast.error('Failed to copy server IP to clipboard!');
-    }
-  };
-
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <img
+          src="../images/hazmat_running.gif"
+          alt="Loading servers"
+          className="h-[200px] object-cover rounded-lg mb-4"
+        />
+        <p className="text-white text-xl font-semibold text-center">
+          Loading the servers... hang tight!
+        </p>
+      </div>
+    );
   }
 
   if (!server) {
-    return <div>Server not found</div>;
+    return (
+      <NoServersMessage />
+    )
   }
 
-  const displayedDescription = isDescriptionExpanded ? server.description : truncateDescription(server.description);
+  const truncateDescription = (description: string, maxLines: number = 4) => {
+    const lines = description.split('\n');
+    if (lines.length <= maxLines) return description;
+    return lines.slice(0, maxLines).join('\n') + '...';
+  };
+
+  let displayedDescription = server.description.replace(/\\t/g, '');
+  displayedDescription = isDescriptionExpanded ? displayedDescription : truncateDescription(displayedDescription);
 
   return (
-<main className="py-8 lg:py-12">
+    <main className="py-8 lg:py-12">
       <div className="container mx-auto px-4">
         <nav className="flex mb-6 mt-4 bg-black-700/80 p-3 rounded-lg" aria-label="Breadcrumb">
           <ol className="inline-flex items-center space-x-1 md:space-x-3">
@@ -141,28 +146,28 @@ const ServerInformation: React.FC = () => {
 
         <div className="grid lg:grid-cols-[auto_340px] gap-4">
           <div className="space-y-6">
-          <div className="bg-black-700/80 rounded-lg p-6">
+            <div className="bg-black-700/80 rounded-lg p-6">
               <h1 className="text-2xl font-bold text-white mb-4">{server.name}</h1>
               <div className="text-gray-300 leading-relaxed whitespace-pre-line">
                 {displayedDescription}
               </div>
               {server.description.split('\n').length > 4 && (
                 <div className="flex justify-center mt-2">
-                <button
-                  onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-                  className="text-primary hover:text-primary-dark transition-colors duration-200 flex items-center"
-                >
-                  {isDescriptionExpanded ? (
-                    <>
-                      Read Less <ChevronUp size={16} className="ml-1" />
-                    </>
-                  ) : (
-                    <>
-                      Read More <ChevronDown size={16} className="ml-1" />
-                    </>
-                  )}
-                </button>
-              </div>
+                  <button
+                    onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                    className="text-primary hover:text-primary-dark transition-colors duration-200 flex items-center"
+                  >
+                    {isDescriptionExpanded ? (
+                      <>
+                        Read Less <ChevronUp size={16} className="ml-1" />
+                      </>
+                    ) : (
+                      <>
+                        Read More <ChevronDown size={16} className="ml-1" />
+                      </>
+                    )}
+                  </button>
+                </div>
               )}
             </div>
 
@@ -202,9 +207,9 @@ const ServerInformation: React.FC = () => {
               <h3 className="text-2xl font-bold text-white mb-4">Wipe Schedule</h3>
               <div className="bg-black-700/80 rounded-lg p-4">
                 <div className="space-y-4">
-                <WipeInfo label="Last Wipe" date={formatDate(server.last_wipe)} />
-              <WipeInfo label="Next Wipe" date={formatDate(server.next_wipe)} />
-              <WipeInfo label="Next Force Wipe" date={getNextForceWipe()} />
+                  <WipeInfo label="Last Wipe" date={formatDate(server.last_wipe)} />
+                  <WipeInfo label="Next Wipe" date={formatDate(server.next_wipe)} />
+                  <WipeInfo label="Next Force Wipe" date={getNextForceWipe()} />
                 </div>
               </div>
             </div>
@@ -269,3 +274,44 @@ const WipeInfo: React.FC<WipeInfoProps> = ({ label, date }) => (
 );
 
 export default ServerInformation;
+
+const NoServersMessage: React.FC = () => {
+  const noServerMessages: string[] = [
+    "Servers? Gone. Just like my base after that offline raid...",
+    "Servers? Gone. Like my loot after saying 'friendly' to a full metal AK guy...",
+    "Servers missing like my teammate's callouts during a raid defense...",
+    "Servers missing like my teammate's gamesense...",
+    "No servers? Not even Rust Academy could fake this footage...",
+    "No servers? Even Rust Academy couldn't script this scenario...",
+    "No servers? Enardo must've summoned a 200-man zerg to DDOS them all...",
+    "Servers gone MIA. AloneInTokyo probably solo defended against every Rust player simultaneously...",
+    "Can't find servers. Qaixxx might have wiped every single player off the face of Rust...",
+    "Servers missing. Posty probably ripped another shirt and accidentally set all Rust servers on fire...",
+    "No servers detected. They're all busy watching AloneInTokyo's latest silent raid defense...",
+    "Servers vanished. Enardo's latest trap was so effective, it caught all the servers too...",
+    "Servers gone. Posty's shirtless rampage was too much for them to handle...",
+    "Servers are gone. They might be hiding under a foundation with Memeio...",
+  ];
+
+  const [randomMessage] = useState<string>(() => {
+    const randomIndex = Math.floor(Math.random() * noServerMessages.length);
+    return noServerMessages[randomIndex];
+  });
+
+  return (
+    <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)]">
+      <img
+        src="../images/hazmat_running.gif"
+        alt="No servers found"
+        className="h-[200px] object-cover rounded-lg mb-4"
+      />
+      <p className="text-white text-xl font-semibold text-center">{randomMessage}</p>
+      <Link href="/" className="mt-4 text-primary hover:text-white transition duration-300">
+        <div className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-black-700">
+          <Home className="w-4 h-4" />
+          <span>Back to Home</span>
+        </div>
+      </Link>
+    </div>
+  );
+};
