@@ -6,7 +6,6 @@ import Head from "next/head";
 import { NextUIProvider } from "@nextui-org/react";
 import Link from 'next/link';
 import GoogleTagManager from '../components/GoogleTagManager';
-import { useRouter } from 'next/router';
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -15,12 +14,12 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Find & Compare Rust Servers by Wipe Times, Population & Rank | Upcoming Wipes</title>
-        <meta name="description" content="Find your perfect Rust server with Upcoming Wipes (UPC). Instantly filter by population, wipe schedule, region, and more. Stay ahead of the competition with the freshest and upcoming wipes for your next thrilling Rust adventure." />
-        <meta name="keywords" content="Rust server list, Rust server finder, Rust wipe time, Upcoming Rust wipes, Fresh Rust servers, Best modded rust servers, Vanilla Rust servers, Rust PvP servers, Rust PvE servers, Best Rust servers, Rust solo/duo/trio servers, Rust servers by wipe time, Rust server hosting, Rust server tracker, Rust servers North America, EU Rust servers, Asia Rust servers, Rust server browser, New Rust servers, Rust wipe schedule, Rust server rankings, Rust roleplay servers, Rust server status list, Rust servers, Rust console servers" />
+        <title>Find & Compare Rust Servers - Wipe Times, Population & Rank | UPC</title>
+        <meta name="description" content="Discover the best Rust servers with Upcoming Wipes (UPC). Filter by population, wipe schedule, region, and more. Stay updated with the latest Rust wipe times for your next adventure." />
+        <meta name="keywords" content="Rust servers, Rust wipe times, Rust server finder, Upcoming Rust wipes, Fresh Rust servers, Modded Rust servers, Vanilla Rust servers, Rust PvP, Rust PvE, Rust server tracker, Rust server hosting, Rust server rankings, Rust roleplay servers, Rust server status" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
-        <link rel="icon" href="images/favicon.ico" />
+        <link rel="icon" href="/images/favicon.ico" />
       </Head>
 
       <GoogleTagManager />
@@ -58,7 +57,7 @@ export default function Home() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <img src="./images/donate.svg" alt="PayPal Donate" className="mx-auto mt-2" style={{ width: '80px' }} />
+                  <img src="/images/donate.svg" alt="Donate with PayPal" className="mx-auto mt-2" style={{ width: '80px' }} />
                 </Link>
               </div>
               <div className="text-sm text-gray-400">

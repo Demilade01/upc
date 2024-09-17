@@ -363,7 +363,7 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
                   <div className="text-[11px]">{formattedWipeDate}</div>
                   <button
                     onClick={() => copyToClipboard(server.address ?? server.ip)}
-                    className="mt-2 px-4 py-2 bg-black text-white text-sm font-inter font-medium rounded-lg bg-gray-900 hover:bg-gray-800 transition duration-300 ease-in-out transform hover:scale-110 hover:shadow-xl"
+                    className="mt-2 px-4 py-2 bg-black text-white text-sm font-inter font-medium rounded-lg hover:bg-gray-800 transition duration-300 ease-in-out transform hover:scale-110 hover:shadow-xl"
                     aria-label={`Connect to server ${server.name}`}
                   >
                     Connect
