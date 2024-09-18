@@ -1,10 +1,5 @@
 import { useState, useEffect, SetStateAction } from "react";
-import engLogo from '../public/images/eng.png'
-const country = [
-  { key: "1", value: "Portugal" },
-  { key: "2", value: "England" },
-  { key: "3", value: "London" },
-];
+
 
 const LanguageAndCountrySelector = () => {
   const [isCountryDropdownOpen, setCountryDropdownOpen] = useState(false);
@@ -48,16 +43,8 @@ const LanguageAndCountrySelector = () => {
       window.removeEventListener("click", handleWindowClick);
     };
   }, []);
-  const CountryContent = [
-    { id: 1, name: "Portugal" },
-    { id: 2, name: "England" },
-    { id: 3, name: "London" },
-  ];
-  const LangContent = [
-    { id: 1,img: engLogo , name: "ENG" },
-    { id: 2,img: engLogo , name: "FRC" },
-    { id: 3,img: engLogo , name: "SPA" },
-  ];
+  
+  
   return (
     <div className="top-cta">
       <div className="container">

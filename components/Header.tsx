@@ -1,5 +1,6 @@
 import { ChangeEvent } from 'react';
 import Link from 'next/link';
+import { serverTypes } from '../constants';
 
 interface HeaderProps {
   setSearchQuery: (query: string) => void;
@@ -18,13 +19,7 @@ const Header = ({ setSearchQuery, serverType, setServerType }: HeaderProps) => {
     }
   };
 
-  const serverTypes = [
-    { type: 'all', label: 'All', iconInactive: null, iconActive: null },
-    { type: 'official', label: 'Official', iconInactive: './images/official_inactive.svg', iconActive: './images/official_active.svg' },
-    { type: 'modded', label: 'Modded', iconInactive: './images/modded_inactive.svg', iconActive: './images/modded_active.svg' },
-    { type: 'community', label: 'Community', iconInactive: './images/community_inactive.svg', iconActive: './images/community_active.svg' },
-    { type: 'favourites', label: 'Favourites', iconInactive: './images/favourites_inactive.svg', iconActive: './images/favourites_active.svg' },
-  ];
+  
 
   return (
     <header>
