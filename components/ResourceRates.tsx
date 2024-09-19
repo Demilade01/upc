@@ -1,14 +1,5 @@
 import Image from 'next/image';
 
-interface ResourceRatesProps {
-  server: {
-    scrap_rate: number;
-    craft_rate: number;
-    gather_rate: number;
-    upkeep: number;
-  };
-}
-
 const ResourceRates: React.FC<ResourceRatesProps> = ({ server }) => (
   <div className="space-y-4">
     <h2 className="text-2xl font-bold text-white mb-4">Resource Rates</h2>
@@ -22,12 +13,6 @@ const ResourceRates: React.FC<ResourceRatesProps> = ({ server }) => (
     </div>
   </div>
 );
-
-interface RateItemProps {
-  icon: string;
-  label: string;
-  value: string;
-}
 
 const RateItem: React.FC<RateItemProps> = ({ icon, label, value }) => (
   <div className="flex items-center space-x-3 place-content-center">

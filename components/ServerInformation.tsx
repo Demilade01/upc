@@ -15,38 +15,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import DescriptionToggle from './DescriptionToggle';
 import Breadcrumb from './BreadCrumb';
 
-interface Server {
-  _id: string;
-  address: string;
-  ip: string;
-  port: number;
-  name: string;
-  rank: number;
-  tags: string[];
-  website_url: string;
-  world_size: number;
-  description: string;
-  group_limit: number;
-  team_ui_limit: number;
-  component_rate: number;
-  craft_rate: number;
-  gather_rate: number;
-  scrap_rate: number;
-  upkeep: number;
-  country_code: string;
-  region: string;
-  country: string;
-  wipe_schedule: string;
-  last_wipe: string;
-  next_wipe: string;
-  max_population_last_wipe: number;
-  server_type: string;
-}
-
-interface ServerInformationProps {
-  server: Server | null;
-  loading: boolean;
-}
 
 const ServerInformation: React.FC<ServerInformationProps> = ({ server, loading }) => {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
@@ -56,6 +24,14 @@ const ServerInformation: React.FC<ServerInformationProps> = ({ server, loading }
   const toggleDescription = () => {
     setIsDescriptionExpanded(prev => !prev);
   };
+
+  function truncateText(description: string, length: number): string {
+    if (description.length <= length) {
+      return description; // No truncation needed if the description is within the length
+    }
+    return description.slice(0, length) + '...'; // Truncate and add ellipsis
+  }
+  
 
   const renderContent = () => {
     if (loading) return <LoadingComponent />;
@@ -101,7 +77,7 @@ const ServerInformation: React.FC<ServerInformationProps> = ({ server, loading }
 };
 
 export default ServerInformation;
-function truncateText(description: string, arg1: number) {
+function truncateText(_description: string, _arg1: number) {
   throw new Error('Function not implemented.');
 }
 

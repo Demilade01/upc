@@ -2,12 +2,6 @@ import { ChangeEvent } from 'react';
 import Link from 'next/link';
 import { serverTypes } from '../constants';
 
-interface HeaderProps {
-  setSearchQuery: (query: string) => void;
-  serverType: string;
-  setServerType: (type: string) => void;
-}
-
 const Header = ({ setSearchQuery, serverType, setServerType }: HeaderProps) => {
   const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);

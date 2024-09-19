@@ -2,11 +2,6 @@ import React, { useState } from 'react';
 import { Star, Link2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 
-interface ServerControlsProps {
-  serverIP: string;
-  websiteURL: string;
-}
-
 const ServerControls: React.FC<ServerControlsProps> = ({ serverIP, websiteURL }) => {
   const [isFavourited, setIsFavourited] = useState(false);
 

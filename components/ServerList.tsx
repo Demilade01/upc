@@ -57,40 +57,8 @@ const getTimeUntilWipe = (wipeDate: Date): string => {
   return `${Math.floor((timeDiff % (1000 * 60)) / 1000)}s`;
 };
 
-interface Server {
-  next_wipe: string;
-  name: string;
-  rank: number;
-  server_type: string;
-  max_population_last_wipe: number;
-  country_code: string;
-  address: string;
-  ip: string;
-  _id: string;
-}
 
-interface ServerListProps {
-  searchQuery?: string;
-  serverType?: string;
-}
 
-interface Filters {
-  maximumPopulation: number[];
-  nextWipe: string[];
-  mapSize: number[];
-  regions: string[];
-  groupLimit: string[];
-  teamUILimit: string[];
-  rank: number[];
-}
-
-interface SliderState {
-  minValue: number;
-  maxValue: number;
-  defaultValue: number[];
-  marks: { value: number; label: string }[];
-  step: number;
-}
 
 const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
   const router = useRouter();
@@ -599,7 +567,7 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
                   </div>
                 </div>
                 <div className="flex-1 sort">
-                  <div className="inline-block text-right lg:w-[258px] w-full mt-0 lg:mt-4">
+                  <div className="w-full bg-black-700 text-white hover:bg-gray-800 flex items-center md:justify-[unset] justify-between gap-6 px-4 py-1.5 rounded-lg">
                     <LangDropdown
                       data={SortContent.map(content => ({
                         ...content,
@@ -662,11 +630,6 @@ const ServerList: React.FC<ServerListProps> = ({ searchQuery, serverType }) => {
   );
 };
 
-interface PaginationProps {
-  currentPage: number;
-  totalPages: number;
-  baseUrl: string;
-}
 
 export const DesktopPagination: React.FC<PaginationProps> = ({ currentPage, totalPages, baseUrl }) => {
   const router = useRouter();

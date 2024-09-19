@@ -6,34 +6,6 @@ import Link from 'next/link';
 import GoogleTagManager from '../../components/GoogleTagManager';
 import ServerInformation from '../../components/ServerInformation';
 
-interface Server {
-  _id: string;
-  address: string;
-  ip: string;
-  port: number;
-  name: string;
-  rank: number;
-  tags: string[];
-  website_url: string;
-  world_size: number;
-  description: string;
-  group_limit: number;
-  team_ui_limit: number;
-  component_rate: number;
-  craft_rate: number;
-  gather_rate: number;
-  scrap_rate: number;
-  upkeep: number;
-  country_code: string;
-  region: string;
-  country: string;
-  wipe_schedule: string;
-  last_wipe: string;
-  next_wipe: string;
-  max_population_last_wipe: number;
-  server_type: string;
-}
-
 export default function ServerPage() {
   const [server, setServer] = useState<Server | null>(null);
   const [loading, setLoading] = useState(true);
